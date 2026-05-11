@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 520">
+  <defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#684dff"/><stop offset="1" stop-color="#e044aa"/></linearGradient><filter id="s"><feDropShadow dx="0" dy="20" stdDeviation="20" flood-opacity=".35"/></filter></defs>
+  <rect width="720" height="520" rx="42" fill="#111827"/>
+  <circle cx="160" cy="120" r="90" fill="#684dff" opacity=".22"/>
+  <circle cx="570" cy="390" r="120" fill="#e044aa" opacity=".20"/>
+  <g filter="url(#s)">
+    <rect x="120" y="92" width="480" height="330" rx="34" fill="#1f2937" stroke="#ffffff" stroke-opacity=".08"/>
+    <rect x="160" y="132" width="400" height="210" rx="24" fill="url(#g)" opacity=".15"/>
+    <g transform="translate(250 120)">
+      <circle cx="105" cy="72" r="54" fill="#eef2ff"/>
+      <rect x="56" y="130" width="100" height="148" rx="32" fill="url(#g)"/>
+      <circle cx="84" cy="66" r="8" fill="#111827"/><circle cx="126" cy="66" r="8" fill="#111827"/>
+      <path d="M78 96 Q105 118 134 96" stroke="#111827" stroke-width="8" fill="none" stroke-linecap="round"/>
+      <rect x="14" y="156" width="52" height="24" rx="12" fill="#eef2ff" transform="rotate(-25 40 168)"/>
+      <rect x="146" y="156" width="52" height="24" rx="12" fill="#eef2ff" transform="rotate(25 172 168)"/>
+      <rect x="66" y="270" width="30" height="72" rx="15" fill="#eef2ff"/>
+      <rect x="116" y="270" width="30" height="72" rx="15" fill="#eef2ff"/>
+    </g>
+    <text x="360" y="392" fill="#eef2ff" text-anchor="middle" font-size="34" font-family="Arial" font-weight="800">Omega Figures</text>
+  </g>
+</svg>
