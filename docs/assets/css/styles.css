@@ -157,9 +157,9 @@ img { max-width: 100%; display: block; }
 .password-toggle { position: absolute; right: 5px; top: 5px; height: 36px; width: 42px; border-radius: 12px; color: var(--text); background: rgba(255,255,255,.06); border: 1px solid var(--border); }
 .interest-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; }
 .interest-grid label, .check-line { display: flex; align-items: center; gap: 8px; padding: 11px 12px; border: 1px solid var(--border); border-radius: 16px; background: rgba(255,255,255,.04); color: var(--muted); font-weight: 700; }
-.demo-users { display: grid; gap: 8px; }
-.demo-user { border: 1px solid var(--border); background: rgba(255,255,255,.04); color: var(--text); border-radius: 14px; padding: 10px 12px; text-align: left; }
-.demo-user:hover { background: rgba(104,77,255,.14); }
+.initial-users { display: grid; gap: 8px; }
+.initial-user { border: 1px solid var(--border); background: rgba(255,255,255,.04); color: var(--text); border-radius: 14px; padding: 10px 12px; text-align: left; }
+.initial-user:hover { background: rgba(104,77,255,.14); }
 
 .order-filter-tabs { display: flex; flex-wrap: wrap; gap: 10px; }
 .order-filter-tabs button { border: 1px solid var(--border); background: rgba(255,255,255,.04); color: var(--text); border-radius: 999px; padding: 10px 16px; font-weight: 800; }

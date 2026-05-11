@@ -1,93 +1,166 @@
 const Omega = (() => {
   const LS = {
-    users: 'omega_pages_users_v1',
-    products: 'omega_pages_products_v1',
-    orders: 'omega_pages_orders_v1',
-    cart: 'omega_pages_cart_v1',
-    session: 'omega_pages_session_v1',
-    theme: 'omega_pages_theme_v1',
-    seeded: 'omega_pages_seeded_v1',
-    lang: 'omega_pages_lang_v1'
+    cart: 'omega_official_cart_v1',
+    session: 'omega_official_session_v1',
+    theme: 'omega_official_theme_v1',
+    lang: 'omega_official_lang_v1'
   };
+
+  const config = window.OMEGA_SUPABASE || {};
+  const isConfigured = Boolean(
+    config.url &&
+    config.anonKey &&
+    !config.url.includes('PEGA_AQUI') &&
+    !config.anonKey.includes('PEGA_AQUI') &&
+    window.supabase
+  );
+
+  const db = isConfigured ? window.supabase.createClient(config.url, config.anonKey) : null;
 
   let adminChart = null;
   let currentOrderFilter = 'ALL';
+  let state = {
+    users: [],
+    products: [],
+    orders: [],
+    loading: false
+  };
 
   const money = (value) => `$${Number(value || 0).toFixed(2)}`;
   const nowDate = () => new Date().toISOString();
   const uid = (prefix) => `${prefix}_${Date.now()}_${Math.random().toString(16).slice(2)}`;
-  const get = (key, fallback) => {
+  const esc = (text = '') => String(text).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  const getLocal = (key, fallback) => {
     try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
   };
-  const set = (key, value) => localStorage.setItem(key, JSON.stringify(value));
-  const esc = (text = '') => String(text).replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
+  const setLocal = (key, value) => localStorage.setItem(key, JSON.stringify(value));
 
-  const seedProducts = [
-    { id: 'p1', name: 'Cyberpunk Collector Bot', category: 'Figura', genre: 'Cyberpunk', description: 'Figura futurista con casco neón, acabado tecnológico y base decorativa.', price: 54.99, stock: 9, image: 'assets/img/figure-1.svg', active: true, featured: true },
-    { id: 'p2', name: 'Omega Ninja Shadow', category: 'Figura', genre: 'Anime', description: 'Figura ninja de colección con traje oscuro, armas decorativas y estilo moderno.', price: 39.99, stock: 12, image: 'assets/img/figure-2.svg', active: true, featured: true },
-    { id: 'p3', name: 'Retro Pixel Warrior', category: 'Coleccionable', genre: 'Retro', description: 'Figura inspirada en videojuegos clásicos, perfecta para amantes del estilo vintage.', price: 24.99, stock: 18, image: 'assets/img/figure-3.svg', active: true, featured: true },
-    { id: 'p4', name: 'Dragon Guardian Statue', category: 'Estatua', genre: 'Fantasía', description: 'Estatua de dragón con acabado de fantasía, textura detallada y base de exhibición.', price: 74.99, stock: 7, image: 'assets/img/figure-4.svg', active: true, featured: true },
-    { id: 'p5', name: 'Galaxy Space Ranger', category: 'Figura', genre: 'Ciencia ficción', description: 'Figura espacial con armadura brillante y detalles galácticos.', price: 64.50, stock: 11, image: 'assets/img/figure-5.svg', active: true, featured: false },
-    { id: 'p6', name: 'Samurai Flame Edition', category: 'Coleccionable', genre: 'Anime', description: 'Samurái edición especial con colores intensos y accesorios intercambiables.', price: 49.90, stock: 14, image: 'assets/img/figure-6.svg', active: true, featured: false },
-    { id: 'p7', name: 'Dark Knight Mini Statue', category: 'Estatua', genre: 'Héroes', description: 'Mini estatua de estilo oscuro para exhibición en escritorio o repisa.', price: 34.75, stock: 16, image: 'assets/img/figure-7.svg', active: true, featured: false },
-    { id: 'p8', name: 'Arcade Robot Classic', category: 'Figura', genre: 'Retro', description: 'Robot de colección con estética arcade y acabado brillante.', price: 29.99, stock: 20, image: 'assets/img/figure-8.svg', active: true, featured: false }
-  ];
+  async function hashText(text) {
+    const encoded = new TextEncoder().encode(text);
+    const digest = await crypto.subtle.digest('SHA-256', encoded);
+    return Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+  }
 
-  const seedUsers = [
-    { id: 'u_admin', name: 'Administrador Omega', email: 'admin@omegafigures.com', password: 'admin123', role: 'ADMIN', phone: '+593000000000', address: 'Oficina principal', city: 'Quito', country: 'Ecuador', birthDate: '', interests: ['Estadísticas'], newsletter: false, createdAt: '2026-05-01T09:00:00.000Z' },
-    { id: 'u_emp', name: 'Empleado Omega', email: 'empleado@omegafigures.com', password: 'empleado123', role: 'EMPLEADO', phone: '+593000000001', address: 'Sucursal online', city: 'Quito', country: 'Ecuador', birthDate: '', interests: ['Gestión'], newsletter: false, createdAt: '2026-05-02T09:00:00.000Z' },
-    { id: 'u_cli', name: 'Cliente Demo', email: 'cliente@omegafigures.com', password: 'cliente123', role: 'CLIENTE', phone: '+593000000002', address: 'Dirección demo', city: 'Quito', country: 'Ecuador', birthDate: '', interests: ['Anime', 'Promociones'], newsletter: true, createdAt: '2026-05-03T09:00:00.000Z' }
-  ];
+  function mapUser(row) {
+    return {
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      passwordHash: row.password_hash,
+      role: row.role,
+      phone: row.phone || '',
+      address: row.address || '',
+      city: row.city || '',
+      country: row.country || '',
+      birthDate: row.birth_date || '',
+      interests: row.interests || [],
+      newsletter: Boolean(row.newsletter),
+      createdAt: row.created_at
+    };
+  }
 
-  const seedOrders = [
-    { id: 'o1', userId: 'u_cli', createdAt: '2026-05-04T11:20:00.000Z', status: 'PENDIENTE', items: [{ productId: 'p1', name: 'Cyberpunk Collector Bot', price: 54.99, quantity: 1, image: 'assets/img/figure-1.svg' }], total: 54.99 },
-    { id: 'o2', userId: 'u_cli', createdAt: '2026-05-05T15:45:00.000Z', status: 'APROBADA', items: [{ productId: 'p3', name: 'Retro Pixel Warrior', price: 24.99, quantity: 2, image: 'assets/img/figure-3.svg' }], total: 49.98 }
-  ];
+  function mapProduct(row) {
+    return {
+      id: row.id,
+      name: row.name,
+      category: row.category,
+      genre: row.genre,
+      description: row.description,
+      price: Number(row.price || 0),
+      stock: Number(row.stock || 0),
+      image: row.image,
+      active: Boolean(row.active),
+      featured: Boolean(row.featured),
+      createdAt: row.created_at
+    };
+  }
 
-  function ensureSeed() {
-    if (!localStorage.getItem(LS.seeded)) {
-      set(LS.products, seedProducts);
-      set(LS.users, seedUsers);
-      set(LS.orders, seedOrders);
-      set(LS.cart, []);
-      localStorage.setItem(LS.seeded, 'true');
+  function mapOrder(row) {
+    const items = (row.order_items || []).map(i => ({
+      productId: i.product_id,
+      name: i.name,
+      price: Number(i.price || 0),
+      quantity: Number(i.quantity || 0),
+      image: i.image
+    }));
+    return {
+      id: row.id,
+      userId: row.user_id,
+      createdAt: row.created_at,
+      status: row.status,
+      total: Number(row.total || 0),
+      items
+    };
+  }
+
+  async function dbSelect(table, queryBuilder) {
+    if (!db) throw new Error('Supabase no está configurado.');
+    const query = queryBuilder ? queryBuilder(db.from(table)) : db.from(table).select('*');
+    const { data, error } = await query;
+    if (error) throw error;
+    return data || [];
+  }
+
+  async function loadAll(showMessage = false) {
+    if (!db) {
+      renderDbWarning();
+      return;
+    }
+
+    try {
+      state.loading = true;
+      const [usersRows, productsRows, ordersRows] = await Promise.all([
+        dbSelect('users', q => q.select('*').order('created_at', { ascending: false })),
+        dbSelect('products', q => q.select('*').order('created_at', { ascending: false })),
+        dbSelect('orders', q => q.select('*, order_items(*)').order('created_at', { ascending: false }))
+      ]);
+
+      state.users = usersRows.map(mapUser);
+      state.products = productsRows.map(mapProduct);
+      state.orders = ordersRows.map(mapOrder);
+
+      if (showMessage) toast('Datos actualizados desde la base SQL.', 'success');
+    } catch (error) {
+      console.error(error);
+      toast(`Error de base de datos: ${error.message}`, 'danger');
+    } finally {
+      state.loading = false;
     }
   }
 
-  function resetSeed() {
-    localStorage.removeItem(LS.seeded);
-    localStorage.removeItem(LS.products);
-    localStorage.removeItem(LS.users);
-    localStorage.removeItem(LS.orders);
-    localStorage.removeItem(LS.cart);
-    localStorage.removeItem(LS.session);
-    ensureSeed();
-    toast('Demo restaurada correctamente.', 'success');
-    renderAll();
-    navigate('inicio');
+  function renderDbWarning() {
+    const message = `<div class="alert alert-warning rounded-4">
+      <strong>Base de datos no configurada.</strong><br>
+      Abre <code>docs/assets/js/supabase-config.js</code>, coloca tu <code>SUPABASE_URL</code> y tu <code>anon public key</code>. Después ejecuta el SQL incluido en <code>database/omegafiguresweb_supabase.sql</code>.
+    </div>`;
+    ['featuredProducts','productsGrid','cartItems','myOrdersList','employeeProductsTable','employeeOrdersTable','employeesTable'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = message;
+    });
+    document.getElementById('heroProductsCount').textContent = '0';
+    document.getElementById('heroOrdersCount').textContent = '0';
+    document.getElementById('productCountText').textContent = '0';
+    updateNav();
   }
 
-  function seedResetConfirm() {
-    if (confirm('¿Deseas restaurar los datos demo? Se eliminarán cambios guardados en este navegador.')) resetSeed();
-  }
-
-  const products = () => get(LS.products, []);
-  const users = () => get(LS.users, []);
-  const orders = () => get(LS.orders, []);
-  const cart = () => get(LS.cart, []);
-  const session = () => get(LS.session, null);
+  const products = () => state.products;
+  const users = () => state.users;
+  const orders = () => state.orders;
+  const cart = () => getLocal(LS.cart, []);
+  const session = () => getLocal(LS.session, null);
   const currentUser = () => users().find(u => u.id === session()?.userId) || null;
 
   function toast(message, type = 'info') {
     const area = document.getElementById('toastArea');
+    if (!area) return;
     const node = document.createElement('div');
     node.className = `omega-toast ${type}`;
     node.innerHTML = esc(message);
     area.appendChild(node);
-    setTimeout(() => node.remove(), 3600);
+    setTimeout(() => node.remove(), 4200);
   }
 
-  function navigate(route) {
+  async function navigate(route) {
     const valid = ['inicio', 'productos', 'carrito', 'login', 'mis-compras', 'admin', 'empleado', 'contacto'];
     if (!valid.includes(route)) route = '404';
     const user = currentUser();
@@ -99,11 +172,12 @@ const Omega = (() => {
     document.getElementById(`page-${route}`)?.classList.add('active-section');
     document.querySelectorAll('.nav-link').forEach(a => a.classList.toggle('active', a.dataset.route === route));
     window.location.hash = route;
-    renderRoute(route);
+    await renderRoute(route);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  function renderRoute(route) {
+  async function renderRoute(route) {
+    if (!db) { renderDbWarning(); return; }
     if (route === 'inicio') renderHome();
     if (route === 'productos') renderProducts();
     if (route === 'carrito') renderCart();
@@ -122,14 +196,14 @@ const Omega = (() => {
     document.getElementById('cartBadge').textContent = cart().reduce((acc, item) => acc + item.quantity, 0);
   }
 
-  function openAuthOrLogout() {
+  async function openAuthOrLogout() {
     const user = currentUser();
     if (!user) return navigate('login');
     if (confirm(`Sesión activa: ${user.name}. ¿Deseas cerrar sesión?`)) {
       localStorage.removeItem(LS.session);
       toast('Sesión cerrada.', 'success');
-      renderAll();
-      navigate('inicio');
+      await renderAll();
+      await navigate('inicio');
     }
   }
 
@@ -211,7 +285,7 @@ const Omega = (() => {
     const existing = c.find(i => i.productId === productId);
     if (existing) existing.quantity = Math.min(product.stock, existing.quantity + qty);
     else c.push({ productId, quantity: Math.min(qty, product.stock) });
-    set(LS.cart, c);
+    setLocal(LS.cart, c);
     updateNav();
     toast('Producto agregado al carrito.', 'success');
   }
@@ -242,12 +316,17 @@ const Omega = (() => {
     item.quantity += delta;
     if (item.quantity <= 0) c.splice(c.indexOf(item), 1);
     if (item.quantity > p.stock) item.quantity = p.stock;
-    set(LS.cart, c);
+    setLocal(LS.cart, c);
     renderCart(); updateNav();
   }
-  function removeCart(productId) { set(LS.cart, cart().filter(i => i.productId !== productId)); renderCart(); updateNav(); }
 
-  function checkout() {
+  function removeCart(productId) {
+    setLocal(LS.cart, cart().filter(i => i.productId !== productId));
+    renderCart(); updateNav();
+  }
+
+  async function checkout() {
+    if (!db) return toast('Configura la base de datos antes de finalizar compras.', 'danger');
     const user = currentUser();
     if (!user || user.role !== 'CLIENTE') { toast('Debes iniciar sesión como cliente para finalizar la compra.', 'danger'); return navigate('login'); }
     const c = cart();
@@ -255,15 +334,36 @@ const Omega = (() => {
     const allProducts = products();
     const items = c.map(i => {
       const p = allProducts.find(x => x.id === i.productId);
-      return { productId: p.id, name: p.name, price: p.price, quantity: i.quantity, image: p.image };
+      return { productId: p.id, name: p.name, price: p.price, quantity: i.quantity, image: p.image, stock: p.stock };
     });
+    const insufficient = items.find(i => i.quantity > i.stock);
+    if (insufficient) return toast(`No hay stock suficiente para ${insufficient.name}.`, 'danger');
     const total = items.reduce((acc, i) => acc + i.price * i.quantity, 0);
-    const newOrder = { id: uid('order'), userId: user.id, createdAt: nowDate(), status: 'PENDIENTE', items, total };
-    set(LS.orders, [newOrder, ...orders()]);
-    set(LS.cart, []);
-    toast('Compra registrada como PENDIENTE.', 'success');
-    renderAll();
-    navigate('mis-compras');
+    const orderId = uid('order');
+
+    try {
+      const { error: orderError } = await db.from('orders').insert({ id: orderId, user_id: user.id, created_at: nowDate(), status: 'PENDIENTE', total });
+      if (orderError) throw orderError;
+
+      const rows = items.map(i => ({ order_id: orderId, product_id: i.productId, name: i.name, price: i.price, quantity: i.quantity, image: i.image }));
+      const { error: itemError } = await db.from('order_items').insert(rows);
+      if (itemError) throw itemError;
+
+      for (const item of items) {
+        const newStock = Math.max(0, item.stock - item.quantity);
+        const { error: stockError } = await db.from('products').update({ stock: newStock }).eq('id', item.productId);
+        if (stockError) throw stockError;
+      }
+
+      setLocal(LS.cart, []);
+      await loadAll();
+      toast('Compra registrada como PENDIENTE.', 'success');
+      await renderAll();
+      await navigate('mis-compras');
+    } catch (error) {
+      console.error(error);
+      toast(`No se pudo registrar la compra: ${error.message}`, 'danger');
+    }
   }
 
   function renderMyOrders() {
@@ -282,6 +382,7 @@ const Omega = (() => {
       <div class="d-flex justify-content-between align-items-center mt-3"><strong>Total: ${money(order.total)}</strong>${actions ? orderActions(order) : ''}</div>
     </article>`;
   }
+
   function orderActions(order) {
     return `<div class="d-flex gap-2 flex-wrap"><button class="btn btn-soft btn-sm" onclick="Omega.setOrderStatus('${order.id}','APROBADA')">Aprobar</button><button class="btn btn-soft btn-sm" onclick="Omega.setOrderStatus('${order.id}','RECHAZADA')">Rechazar</button><button class="btn btn-soft btn-sm" onclick="Omega.setOrderStatus('${order.id}','ENVIADA')">Enviada</button></div>`;
   }
@@ -302,8 +403,12 @@ const Omega = (() => {
   function renderChart() {
     const metric = document.getElementById('adminMetric').value;
     const labels = document.getElementById('adminPeriod').value === 'semana' ? ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'] : document.getElementById('adminPeriod').value === 'mes' ? ['S1','S2','S3','S4'] : ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-    const base = metric === 'compras' ? [4,7,5,8,6,9,11,6,8,12,10,14] : metric === 'clientes' ? [2,3,4,5,3,6,4,8,6,7,9,10] : [65,72,75,78,80,84,88,86,90,92,93,95];
-    const data = labels.map((_, i) => base[i % base.length]);
+    const allOrders = orders();
+    const clients = users().filter(u => u.role === 'CLIENTE');
+    let data;
+    if (metric === 'compras') data = labels.map((_, i) => allOrders.filter((__, idx) => idx % labels.length === i).length);
+    else if (metric === 'clientes') data = labels.map((_, i) => clients.filter((__, idx) => idx % labels.length === i).length);
+    else data = labels.map((_, i) => Math.min(100, 70 + (i * 3) + allOrders.filter(o => ['APROBADA','ENVIADA'].includes(o.status)).length));
     const ctx = document.getElementById('adminChart');
     if (!ctx || !window.Chart) return;
     if (adminChart) adminChart.destroy();
@@ -333,19 +438,29 @@ const Omega = (() => {
     document.getElementById('productModalContent').innerHTML = `<div class="row g-4 align-items-center"><div class="col-lg-6"><img class="modal-product-img" src="${esc(p.image)}" alt="${esc(p.name)}"></div><div class="col-lg-6"><div class="d-flex gap-2 flex-wrap mb-3"><span class="badge-soft">${esc(p.genre)}</span><span class="badge-soft">${esc(p.category)}</span></div><h2 class="fw-bold">${esc(p.name)}</h2><p class="text-secondary fs-5">${esc(p.description)}</p><div class="d-flex justify-content-between my-4"><span>Stock: <strong>${p.stock}</strong></span><span class="product-price">${money(p.price)}</span></div><button class="btn btn-gradient btn-lg" data-bs-dismiss="modal" onclick="Omega.quickAdd('${p.id}')">Agregar al carrito</button></div></div>`;
     bootstrap.Modal.getOrCreateInstance(document.getElementById('productModal')).show();
   }
-  function quickAdd(productId) { const body = document.createElement('div'); body.innerHTML = `<div class="product-body"><input class="qty-input" value="1"></div>`; addToCart(productId, { closest: () => body.querySelector('.product-body') }); }
 
-  function login(email, password) {
-    const user = users().find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === password);
-    if (!user) return toast('Correo o contraseña incorrectos.', 'danger');
-    set(LS.session, { userId: user.id, loginAt: nowDate() });
-    toast(`Bienvenido/a ${user.name}.`, 'success');
-    renderAll();
-    navigate(user.role === 'ADMIN' ? 'admin' : user.role === 'EMPLEADO' ? 'empleado' : 'productos');
+  function quickAdd(productId) {
+    const body = document.createElement('div');
+    body.innerHTML = `<div class="product-body"><input class="qty-input" value="1"></div>`;
+    addToCart(productId, { closest: () => body.querySelector('.product-body') });
   }
-  function fillLogin(email, password) { document.getElementById('loginEmail').value = email; document.getElementById('loginPassword').value = password; }
 
-  function register() {
+  async function login(email, password) {
+    const hash = await hashText(password);
+    const user = users().find(u => u.email.toLowerCase() === email.toLowerCase() && u.passwordHash === hash);
+    if (!user) return toast('Correo o contraseña incorrectos.', 'danger');
+    setLocal(LS.session, { userId: user.id, loginAt: nowDate() });
+    toast(`Bienvenido/a ${user.name}.`, 'success');
+    await renderAll();
+    await navigate(user.role === 'ADMIN' ? 'admin' : user.role === 'EMPLEADO' ? 'empleado' : 'productos');
+  }
+
+  function fillLogin(email, password) {
+    document.getElementById('loginEmail').value = email;
+    document.getElementById('loginPassword').value = password;
+  }
+
+  async function register() {
     const password = document.getElementById('regPassword').value;
     const confirm = document.getElementById('regConfirm').value;
     const email = document.getElementById('regEmail').value.trim();
@@ -353,65 +468,184 @@ const Omega = (() => {
     if (password !== confirm) return toast('Las contraseñas no coinciden.', 'danger');
     if (users().some(u => u.email.toLowerCase() === email.toLowerCase())) return toast('El correo ya existe.', 'danger');
     const interests = [...document.querySelectorAll('#registerForm .interest-grid input:checked')].map(i => i.value);
-    const newUser = { id: uid('user'), name: document.getElementById('regName').value.trim(), email, password, role: 'CLIENTE', phone: document.getElementById('regPhone').value.trim(), address: document.getElementById('regAddress').value.trim(), city: document.getElementById('regCity').value.trim(), country: document.getElementById('regCountry').value.trim(), birthDate: document.getElementById('regBirth').value, interests, newsletter: document.getElementById('regNewsletter').checked, createdAt: nowDate() };
-    set(LS.users, [newUser, ...users()]);
-    set(LS.session, { userId: newUser.id, loginAt: nowDate() });
+    const id = uid('user');
+    const passwordHash = await hashText(password);
+    const row = {
+      id,
+      name: document.getElementById('regName').value.trim(),
+      email,
+      password_hash: passwordHash,
+      role: 'CLIENTE',
+      phone: document.getElementById('regPhone').value.trim(),
+      address: document.getElementById('regAddress').value.trim(),
+      city: document.getElementById('regCity').value.trim(),
+      country: document.getElementById('regCountry').value.trim(),
+      birth_date: document.getElementById('regBirth').value || null,
+      interests,
+      newsletter: document.getElementById('regNewsletter').checked,
+      created_at: nowDate()
+    };
+    const { error } = await db.from('users').insert(row);
+    if (error) return toast(`No se pudo crear la cuenta: ${error.message}`, 'danger');
+    setLocal(LS.session, { userId: id, loginAt: nowDate() });
     toast('Cuenta creada correctamente.', 'success');
-    document.getElementById('registerForm').reset(); renderAll(); navigate('productos');
+    document.getElementById('registerForm').reset();
+    await loadAll();
+    await renderAll();
+    await navigate('productos');
   }
 
-  function showEmployeeModal() { bootstrap.Modal.getOrCreateInstance(document.getElementById('employeeModal')).show(); }
-  function createEmployee() {
+  function showEmployeeModal() {
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('employeeModal')).show();
+  }
+
+  async function createEmployee() {
     const email = document.getElementById('empEmail').value.trim();
     if (users().some(u => u.email.toLowerCase() === email.toLowerCase())) return toast('El correo ya existe.', 'danger');
-    const emp = { id: uid('emp'), name: document.getElementById('empName').value.trim(), email, password: document.getElementById('empPassword').value, role: 'EMPLEADO', phone: document.getElementById('empPhone').value.trim(), address: '', city: '', country: 'Ecuador', birthDate: '', interests: ['Gestión de tienda'], newsletter: false, createdAt: nowDate() };
-    set(LS.users, [emp, ...users()]);
+    const row = {
+      id: uid('emp'),
+      name: document.getElementById('empName').value.trim(),
+      email,
+      password_hash: await hashText(document.getElementById('empPassword').value),
+      role: 'EMPLEADO',
+      phone: document.getElementById('empPhone').value.trim(),
+      address: '',
+      city: '',
+      country: 'Ecuador',
+      birth_date: null,
+      interests: ['Gestión de tienda'],
+      newsletter: false,
+      created_at: nowDate()
+    };
+    const { error } = await db.from('users').insert(row);
+    if (error) return toast(`No se pudo crear empleado: ${error.message}`, 'danger');
     document.getElementById('employeeForm').reset();
     bootstrap.Modal.getInstance(document.getElementById('employeeModal')).hide();
-    toast('Empleado creado correctamente.', 'success'); renderAdmin();
+    toast('Empleado creado correctamente.', 'success');
+    await loadAll();
+    renderAdmin();
   }
 
-  function saveProduct() {
+  async function saveProduct() {
     const id = document.getElementById('prodId').value || uid('prod');
-    const list = products();
-    const existing = list.find(p => p.id === id);
-    const product = { id, name: document.getElementById('prodName').value.trim(), category: document.getElementById('prodCategory').value.trim(), genre: document.getElementById('prodGenre').value.trim(), price: Number(document.getElementById('prodPrice').value), stock: Number(document.getElementById('prodStock').value), image: document.getElementById('prodImage').value.trim() || 'assets/img/figure-1.svg', description: document.getElementById('prodDesc').value.trim(), active: document.getElementById('prodActive').checked, featured: existing?.featured || false };
-    if (existing) Object.assign(existing, product); else list.unshift(product);
-    set(LS.products, list); clearProductForm(); toast('Producto guardado.', 'success'); renderEmployee(); renderProducts();
+    const product = {
+      id,
+      name: document.getElementById('prodName').value.trim(),
+      category: document.getElementById('prodCategory').value.trim(),
+      genre: document.getElementById('prodGenre').value.trim(),
+      price: Number(document.getElementById('prodPrice').value),
+      stock: Number(document.getElementById('prodStock').value),
+      image: document.getElementById('prodImage').value.trim() || 'assets/img/figure-1.svg',
+      description: document.getElementById('prodDesc').value.trim(),
+      active: document.getElementById('prodActive').checked,
+      featured: products().find(p => p.id === id)?.featured || false
+    };
+    const { error } = await db.from('products').upsert(product, { onConflict: 'id' });
+    if (error) return toast(`No se pudo guardar producto: ${error.message}`, 'danger');
+    clearProductForm();
+    toast('Producto guardado en la base SQL.', 'success');
+    await loadAll();
+    renderEmployee();
+    renderProducts();
   }
-  function editProduct(id) { const p = products().find(x => x.id === id); if (!p) return; ['Id','Name','Category','Genre','Price','Stock','Image','Desc'].forEach(() => {}); document.getElementById('prodId').value = p.id; document.getElementById('prodName').value = p.name; document.getElementById('prodCategory').value = p.category; document.getElementById('prodGenre').value = p.genre; document.getElementById('prodPrice').value = p.price; document.getElementById('prodStock').value = p.stock; document.getElementById('prodImage').value = p.image; document.getElementById('prodDesc').value = p.description; document.getElementById('prodActive').checked = p.active; window.scrollTo({ top: 0, behavior: 'smooth' }); }
-  function clearProductForm() { document.getElementById('productForm')?.reset(); document.getElementById('prodId').value = ''; document.getElementById('prodActive').checked = true; }
-  function toggleProduct(id) { const list = products(); const p = list.find(x => x.id === id); if (p) { p.active = !p.active; set(LS.products, list); renderEmployee(); renderProducts(); toast('Estado actualizado.', 'success'); } }
-  function setOrderStatus(id, status) { const list = orders(); const o = list.find(x => x.id === id); if (o) { o.status = status; set(LS.orders, list); renderEmployee(); toast(`Pedido marcado como ${status}.`, 'success'); } }
 
-  function togglePassword(inputId, btn) { const input = document.getElementById(inputId); const show = input.type === 'password'; input.type = show ? 'text' : 'password'; btn.querySelector('i').className = show ? 'bi bi-eye-slash' : 'bi bi-eye'; }
+  function editProduct(id) {
+    const p = products().find(x => x.id === id);
+    if (!p) return;
+    document.getElementById('prodId').value = p.id;
+    document.getElementById('prodName').value = p.name;
+    document.getElementById('prodCategory').value = p.category;
+    document.getElementById('prodGenre').value = p.genre;
+    document.getElementById('prodPrice').value = p.price;
+    document.getElementById('prodStock').value = p.stock;
+    document.getElementById('prodImage').value = p.image;
+    document.getElementById('prodDesc').value = p.description;
+    document.getElementById('prodActive').checked = p.active;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function clearProductForm() {
+    document.getElementById('productForm')?.reset();
+    document.getElementById('prodId').value = '';
+    document.getElementById('prodActive').checked = true;
+  }
+
+  async function toggleProduct(id) {
+    const p = products().find(x => x.id === id);
+    if (!p) return;
+    const { error } = await db.from('products').update({ active: !p.active }).eq('id', id);
+    if (error) return toast(`No se pudo actualizar producto: ${error.message}`, 'danger');
+    await loadAll();
+    renderEmployee();
+    renderProducts();
+    toast('Estado actualizado.', 'success');
+  }
+
+  async function setOrderStatus(id, status) {
+    const { error } = await db.from('orders').update({ status }).eq('id', id);
+    if (error) return toast(`No se pudo actualizar pedido: ${error.message}`, 'danger');
+    await loadAll();
+    renderEmployee();
+    toast(`Pedido marcado como ${status}.`, 'success');
+  }
+
+  function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.querySelector('i').className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+  }
+
   function empty(text) { return `<div class="empty-state">${esc(text)}</div>`; }
-  function applyTheme() { const theme = localStorage.getItem(LS.theme) || 'dark'; document.body.classList.toggle('light-mode', theme === 'light'); document.getElementById('themeToggle').innerHTML = theme === 'light' ? '<i class="bi bi-sun"></i>' : '<i class="bi bi-moon-stars"></i>'; }
 
-  function renderAll() { updateNav(); renderHome(); renderProducts(); renderCart(); }
+  function applyTheme() {
+    const theme = localStorage.getItem(LS.theme) || 'dark';
+    document.body.classList.toggle('light-mode', theme === 'light');
+    document.getElementById('themeToggle').innerHTML = theme === 'light' ? '<i class="bi bi-sun"></i>' : '<i class="bi bi-moon-stars"></i>';
+  }
+
+  async function renderAll() {
+    if (!db) { renderDbWarning(); return; }
+    updateNav(); renderHome(); renderProducts(); renderCart();
+  }
+
+  async function refreshData() {
+    await loadAll(true);
+    await renderAll();
+    const route = window.location.hash.replace('#', '') || 'inicio';
+    await renderRoute(route);
+  }
 
   function initEvents() {
     ['searchInput','genreFilter','categoryFilter','minPrice','maxPrice','sortFilter'].forEach(id => document.getElementById(id)?.addEventListener('input', renderProducts));
-    document.getElementById('loginForm').addEventListener('submit', e => { e.preventDefault(); login(document.getElementById('loginEmail').value, document.getElementById('loginPassword').value); });
-    document.getElementById('registerForm').addEventListener('submit', e => { e.preventDefault(); register(); });
-    document.getElementById('employeeForm').addEventListener('submit', e => { e.preventDefault(); createEmployee(); });
-    document.getElementById('productForm').addEventListener('submit', e => { e.preventDefault(); saveProduct(); });
+    document.getElementById('loginForm').addEventListener('submit', async e => { e.preventDefault(); await login(document.getElementById('loginEmail').value, document.getElementById('loginPassword').value); });
+    document.getElementById('registerForm').addEventListener('submit', async e => { e.preventDefault(); await register(); });
+    document.getElementById('employeeForm').addEventListener('submit', async e => { e.preventDefault(); await createEmployee(); });
+    document.getElementById('productForm').addEventListener('submit', async e => { e.preventDefault(); await saveProduct(); });
     document.getElementById('themeToggle').addEventListener('click', () => { localStorage.setItem(LS.theme, document.body.classList.contains('light-mode') ? 'dark' : 'light'); applyTheme(); if (adminChart) renderChart(); });
     document.getElementById('adminMetric').addEventListener('change', renderChart);
     document.getElementById('adminPeriod').addEventListener('change', renderChart);
     document.querySelectorAll('[data-route]').forEach(el => el.addEventListener('click', e => { const route = el.dataset.route; if (route) { e.preventDefault(); navigate(route); } }));
     document.querySelectorAll('[data-order-filter]').forEach(btn => btn.addEventListener('click', () => { document.querySelectorAll('[data-order-filter]').forEach(b => b.classList.remove('active')); btn.classList.add('active'); currentOrderFilter = btn.dataset.orderFilter; renderMyOrders(); }));
     document.getElementById('languageSelect').value = localStorage.getItem(LS.lang) || 'es';
-    document.getElementById('languageSelect').addEventListener('change', e => { localStorage.setItem(LS.lang, e.target.value); toast(e.target.value === 'en' ? 'Language saved. Demo texts remain mostly in Spanish.' : 'Idioma guardado.', 'success'); });
+    document.getElementById('languageSelect').addEventListener('change', e => { localStorage.setItem(LS.lang, e.target.value); toast(e.target.value === 'en' ? 'Language saved.' : 'Idioma guardado.', 'success'); });
   }
 
-  function init() {
-    ensureSeed(); applyTheme(); initEvents(); renderAll();
+  async function init() {
+    applyTheme();
+    initEvents();
+    if (!db) {
+      renderDbWarning();
+      toast('Configura Supabase para activar la base de datos SQL.', 'danger');
+    } else {
+      await loadAll();
+      await renderAll();
+    }
     const initial = window.location.hash.replace('#', '') || 'inicio';
-    navigate(initial);
+    await navigate(initial);
   }
 
-  return { init, navigate, openAuthOrLogout, clearFilters, changeQty, addToCart, updateCartQty, removeCart, checkout, openProduct, quickAdd, fillLogin, togglePassword, showEmployeeModal, editProduct, clearProductForm, toggleProduct, setOrderStatus, seedResetConfirm };
+  return { init, navigate, openAuthOrLogout, clearFilters, changeQty, addToCart, updateCartQty, removeCart, checkout, openProduct, quickAdd, fillLogin, togglePassword, showEmployeeModal, editProduct, clearProductForm, toggleProduct, setOrderStatus, refreshData };
 })();
 
 document.addEventListener('DOMContentLoaded', Omega.init);
