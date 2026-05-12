@@ -14,7 +14,7 @@
   <div class="app-shell">
     <nav class="navbar navbar-expand-xl fixed-top omega-navbar">
       <div class="container-fluid px-3 px-lg-4">
-        <a class="navbar-brand d-flex align-items-center gap-2" href="#inicio" data-route="inicio">
+        <a class="navbar-brand d-flex align-items-center gap-2" href="#page-inicio" data-route="inicio">
           <span class="brand-orb"><i class="bi bi-stars"></i></span>
           <span class="brand-text">OmegaFiguresWeb</span>
         </a>
@@ -25,23 +25,24 @@
 
         <div class="collapse navbar-collapse" id="mainNavbar">
           <ul class="navbar-nav mx-auto mb-2 mb-xl-0 gap-xl-1">
-            <li class="nav-item"><a class="nav-link" href="#inicio" data-route="inicio"><i class="bi bi-house-door me-1"></i>Inicio</a></li>
-            <li class="nav-item"><a class="nav-link" href="#productos" data-route="productos"><i class="bi bi-grid me-1"></i>Productos</a></li>
-            <li class="nav-item nav-client"><a class="nav-link" href="#mis-compras" data-route="mis-compras"><i class="bi bi-bag-check me-1"></i>Mis compras</a></li>
-            <li class="nav-item nav-admin"><a class="nav-link" href="#admin" data-route="admin"><i class="bi bi-bar-chart-line me-1"></i>Admin</a></li>
-            <li class="nav-item nav-employee"><a class="nav-link" href="#empleado" data-route="empleado"><i class="bi bi-tools me-1"></i>Empleado</a></li>
-            <li class="nav-item"><a class="nav-link" href="#contacto" data-route="contacto"><i class="bi bi-share me-1"></i>Redes</a></li>
+            <li class="nav-item"><a class="nav-link" href="#page-inicio" data-route="inicio"><i class="bi bi-house-door me-1"></i>Inicio</a></li>
+            <li class="nav-item"><a class="nav-link" href="#page-productos" data-route="productos"><i class="bi bi-grid me-1"></i>Productos</a></li>
+            <li class="nav-item nav-client"><a class="nav-link" href="#page-mis-compras" data-route="mis-compras"><i class="bi bi-bag-check me-1"></i>Mis compras</a></li>
+            <li class="nav-item nav-admin"><a class="nav-link" href="#page-admin" data-route="admin"><i class="bi bi-bar-chart-line me-1"></i>Admin</a></li>
+            <li class="nav-item nav-employee"><a class="nav-link" href="#page-empleado" data-route="empleado"><i class="bi bi-tools me-1"></i>Empleado</a></li>
+            <li class="nav-item"><a class="nav-link" href="#page-contacto" data-route="contacto"><i class="bi bi-share me-1"></i>Redes</a></li>
           </ul>
 
           <div class="d-flex flex-column flex-xl-row align-items-stretch align-items-xl-center gap-2">
-            <select id="languageSelect" class="form-select form-select-sm omega-select" title="Idioma">
+            <label for="languageSelect" class="visually-hidden">Idioma</label>
+            <select id="languageSelect" class="form-select form-select-sm omega-select" title="Idioma" aria-label="Idioma">
               <option value="es">Español</option>
               <option value="en">English</option>
             </select>
-            <button id="themeToggle" class="btn btn-ghost" type="button" title="Cambiar tema">
+            <button id="themeToggle" class="btn btn-ghost" type="button" title="Cambiar tema" aria-label="Cambiar tema">
               <i class="bi bi-moon-stars"></i>
             </button>
-            <button class="btn btn-cart position-relative" type="button" data-route="carrito" onclick="Omega.navigate('carrito')">
+            <button class="btn btn-cart position-relative" type="button" data-route="carrito" onclick="Omega.navigate('carrito')" aria-label="Ir al carrito">
               <i class="bi bi-cart3"></i>
               <span>Carrito</span>
               <span id="cartBadge" class="cart-badge">0</span>
@@ -107,31 +108,31 @@
           <div class="search-panel mb-4">
             <div class="row g-3 align-items-end">
               <div class="col-lg-4">
-                <label class="form-label">Buscar</label>
+                <label for="searchInput" class="form-label">Buscar</label>
                 <div class="input-icon">
                   <i class="bi bi-search"></i>
-                  <input id="searchInput" class="form-control" type="search" placeholder="Nombre, categoría o descripción" />
+                  <input id="searchInput" class="form-control" type="search" placeholder="Nombre, categoría o descripción" aria-label="Buscar productos" />
                 </div>
               </div>
               <div class="col-md-6 col-lg-2">
-                <label class="form-label">Género</label>
-                <select id="genreFilter" class="form-select"></select>
+                <label for="genreFilter" class="form-label">Género</label>
+                <select id="genreFilter" class="form-select" aria-label="Filtrar por género"></select>
               </div>
               <div class="col-md-6 col-lg-2">
-                <label class="form-label">Categoría</label>
-                <select id="categoryFilter" class="form-select"></select>
+                <label for="categoryFilter" class="form-label">Categoría</label>
+                <select id="categoryFilter" class="form-select" aria-label="Filtrar por categoría"></select>
               </div>
               <div class="col-6 col-lg-1">
-                <label class="form-label">Min</label>
-                <input id="minPrice" class="form-control" type="number" min="0" placeholder="$0" />
+                <label for="minPrice" class="form-label">Min</label>
+                <input id="minPrice" class="form-control" type="number" min="0" placeholder="$0" aria-label="Precio mínimo" />
               </div>
               <div class="col-6 col-lg-1">
-                <label class="form-label">Max</label>
-                <input id="maxPrice" class="form-control" type="number" min="0" placeholder="$100" />
+                <label for="maxPrice" class="form-label">Max</label>
+                <input id="maxPrice" class="form-control" type="number" min="0" placeholder="$100" aria-label="Precio máximo" />
               </div>
               <div class="col-md-6 col-lg-1">
-                <label class="form-label">Orden</label>
-                <select id="sortFilter" class="form-select">
+                <label for="sortFilter" class="form-label">Orden</label>
+                <select id="sortFilter" class="form-select" aria-label="Ordenar productos">
                   <option value="recommended">Recomendado</option>
                   <option value="priceAsc">Precio ↑</option>
                   <option value="priceDesc">Precio ↓</option>
@@ -139,7 +140,7 @@
                 </select>
               </div>
               <div class="col-md-6 col-lg-1 d-grid">
-                <button class="btn btn-soft" type="button" onclick="Omega.clearFilters()"><i class="bi bi-x-circle"></i></button>
+                <button class="btn btn-soft" type="button" onclick="Omega.clearFilters()" aria-label="Limpiar filtros" title="Limpiar filtros"><i class="bi bi-x-circle"></i></button>
               </div>
             </div>
           </div>
@@ -185,14 +186,14 @@
                 <p class="text-secondary">Usa una cuenta inicial o registra una cuenta nueva.</p>
                 <form id="loginForm" class="mt-4">
                   <div class="mb-3">
-                    <label class="form-label">Correo</label>
-                    <input id="loginEmail" type="email" class="form-control" required placeholder="correo@ejemplo.com" />
+                    <label for="loginEmail" class="form-label">Correo</label>
+                    <input id="loginEmail" type="email" class="form-control" required placeholder="correo@ejemplo.com" aria-label="Correo de inicio de sesión" />
                   </div>
                   <div class="mb-3">
-                    <label class="form-label">Contraseña</label>
+                    <label for="loginPassword" class="form-label">Contraseña</label>
                     <div class="password-box">
-                      <input id="loginPassword" type="password" class="form-control" required placeholder="Contraseña" />
-                      <button class="btn password-toggle" type="button" onclick="Omega.togglePassword('loginPassword', this)"><i class="bi bi-eye"></i></button>
+                      <input id="loginPassword" type="password" class="form-control" required placeholder="Contraseña" aria-label="Contraseña de inicio de sesión" />
+                      <button class="btn password-toggle" type="button" onclick="Omega.togglePassword('loginPassword', this)" aria-label="Mostrar u ocultar contraseña"><i class="bi bi-eye"></i></button>
                     </div>
                   </div>
                   <button class="btn btn-gradient w-100" type="submit">Ingresar</button>
@@ -211,23 +212,23 @@
                 <p class="text-secondary">Formulario completo con intereses para recibir información.</p>
                 <form id="registerForm" class="mt-4">
                   <div class="row g-3">
-                    <div class="col-md-6"><label class="form-label">Nombre completo</label><input id="regName" class="form-control" required /></div>
-                    <div class="col-md-6"><label class="form-label">Correo</label><input id="regEmail" type="email" class="form-control" required /></div>
-                    <div class="col-md-6"><label class="form-label">Teléfono</label><input id="regPhone" class="form-control" placeholder="+593..." /></div>
-                    <div class="col-md-6"><label class="form-label">Fecha de nacimiento</label><input id="regBirth" type="date" class="form-control" /></div>
-                    <div class="col-md-6"><label class="form-label">Ciudad</label><input id="regCity" class="form-control" /></div>
-                    <div class="col-md-6"><label class="form-label">País</label><input id="regCountry" class="form-control" value="Ecuador" /></div>
-                    <div class="col-12"><label class="form-label">Dirección</label><input id="regAddress" class="form-control" /></div>
+                    <div class="col-md-6"><label for="regName" class="form-label">Nombre completo</label><input id="regName" class="form-control" required aria-label="Nombre completo" /></div>
+                    <div class="col-md-6"><label for="regEmail" class="form-label">Correo</label><input id="regEmail" type="email" class="form-control" required aria-label="Correo" /></div>
+                    <div class="col-md-6"><label for="regPhone" class="form-label">Teléfono</label><input id="regPhone" class="form-control" placeholder="+593..." aria-label="Teléfono" /></div>
+                    <div class="col-md-6"><label for="regBirth" class="form-label">Fecha de nacimiento</label><input id="regBirth" type="date" class="form-control" aria-label="Fecha de nacimiento" /></div>
+                    <div class="col-md-6"><label for="regCity" class="form-label">Ciudad</label><input id="regCity" class="form-control" aria-label="Ciudad" /></div>
+                    <div class="col-md-6"><label for="regCountry" class="form-label">País</label><input id="regCountry" class="form-control" value="Ecuador" aria-label="País" /></div>
+                    <div class="col-12"><label for="regAddress" class="form-label">Dirección</label><input id="regAddress" class="form-control" aria-label="Dirección" /></div>
                     <div class="col-md-6">
-                      <label class="form-label">Contraseña</label>
-                      <div class="password-box"><input id="regPassword" type="password" class="form-control" required minlength="6" /><button class="btn password-toggle" type="button" onclick="Omega.togglePassword('regPassword', this)"><i class="bi bi-eye"></i></button></div>
+                      <label for="regPassword" class="form-label">Contraseña</label>
+                      <div class="password-box"><input id="regPassword" type="password" class="form-control" required minlength="6" aria-label="Contraseña" /><button class="btn password-toggle" type="button" onclick="Omega.togglePassword('regPassword', this)" aria-label="Mostrar u ocultar contraseña"><i class="bi bi-eye"></i></button></div>
                     </div>
                     <div class="col-md-6">
-                      <label class="form-label">Confirmar contraseña</label>
-                      <div class="password-box"><input id="regConfirm" type="password" class="form-control" required minlength="6" /><button class="btn password-toggle" type="button" onclick="Omega.togglePassword('regConfirm', this)"><i class="bi bi-eye"></i></button></div>
+                      <label for="regConfirm" class="form-label">Confirmar contraseña</label>
+                      <div class="password-box"><input id="regConfirm" type="password" class="form-control" required minlength="6" aria-label="Confirmar contraseña" /><button class="btn password-toggle" type="button" onclick="Omega.togglePassword('regConfirm', this)" aria-label="Mostrar u ocultar contraseña"><i class="bi bi-eye"></i></button></div>
                     </div>
                     <div class="col-12">
-                      <label class="form-label">¿Qué información te gustaría recibir?</label>
+                      <p class="form-label mb-2">¿Qué información te gustaría recibir?</p>
                       <div class="interest-grid">
                         <label><input type="checkbox" value="Anime" /> Anime</label>
                         <label><input type="checkbox" value="Videojuegos" /> Videojuegos</label>
@@ -237,7 +238,7 @@
                         <label><input type="checkbox" value="Novedades" /> Novedades</label>
                       </div>
                     </div>
-                    <div class="col-12"><label class="check-line"><input id="regNewsletter" type="checkbox" checked /> Deseo recibir novedades y promociones.</label></div>
+                    <div class="col-12"><label for="regNewsletter" class="check-line"><input id="regNewsletter" type="checkbox" checked aria-label="Recibir novedades" /> Deseo recibir novedades y promociones.</label></div>
                     <div class="col-12"><button class="btn btn-gradient w-100" type="submit">Crear cuenta cliente</button></div>
                   </div>
                 </form>
@@ -284,8 +285,8 @@
                     <p class="text-secondary mb-0">Filtra por compras, nuevos clientes o rendimiento.</p>
                   </div>
                   <div class="d-flex gap-2 flex-wrap">
-                    <select id="adminMetric" class="form-select form-select-sm omega-select"><option value="compras">Compras</option><option value="clientes">Nuevos clientes</option><option value="rendimiento">Rendimiento</option></select>
-                    <select id="adminPeriod" class="form-select form-select-sm omega-select"><option value="semana">Semana</option><option value="mes">Mes</option><option value="anio">Año</option></select>
+                    <label for="adminMetric" class="visually-hidden">Métrica</label><select id="adminMetric" class="form-select form-select-sm omega-select" aria-label="Métrica estadística"><option value="compras">Compras</option><option value="clientes">Nuevos clientes</option><option value="rendimiento">Rendimiento</option></select>
+                    <label for="adminPeriod" class="visually-hidden">Periodo</label><select id="adminPeriod" class="form-select form-select-sm omega-select" aria-label="Periodo estadístico"><option value="semana">Semana</option><option value="mes">Mes</option><option value="anio">Año</option></select>
                   </div>
                 </div>
                 <canvas id="adminChart" height="130"></canvas>
@@ -330,14 +331,14 @@
                 </div>
                 <form id="productForm" class="row g-3">
                   <input type="hidden" id="prodId" />
-                  <div class="col-12"><label class="form-label">Nombre</label><input id="prodName" class="form-control" required /></div>
-                  <div class="col-md-6"><label class="form-label">Categoría</label><input id="prodCategory" class="form-control" required /></div>
-                  <div class="col-md-6"><label class="form-label">Género</label><input id="prodGenre" class="form-control" required /></div>
-                  <div class="col-md-6"><label class="form-label">Precio</label><input id="prodPrice" type="number" step="0.01" class="form-control" required /></div>
-                  <div class="col-md-6"><label class="form-label">Stock</label><input id="prodStock" type="number" class="form-control" required /></div>
-                  <div class="col-12"><label class="form-label">URL imagen</label><input id="prodImage" class="form-control" placeholder="assets/img/figure-1.svg" /></div>
-                  <div class="col-12"><label class="form-label">Descripción</label><textarea id="prodDesc" class="form-control" rows="3" required></textarea></div>
-                  <div class="col-12"><label class="check-line"><input id="prodActive" type="checkbox" checked /> Producto activo</label></div>
+                  <div class="col-12"><label for="prodName" class="form-label">Nombre</label><input id="prodName" class="form-control" required aria-label="Nombre del producto" /></div>
+                  <div class="col-md-6"><label for="prodCategory" class="form-label">Categoría</label><input id="prodCategory" class="form-control" required aria-label="Categoría del producto" /></div>
+                  <div class="col-md-6"><label for="prodGenre" class="form-label">Género</label><input id="prodGenre" class="form-control" required aria-label="Género del producto" /></div>
+                  <div class="col-md-6"><label for="prodPrice" class="form-label">Precio</label><input id="prodPrice" type="number" step="0.01" class="form-control" required aria-label="Precio del producto" /></div>
+                  <div class="col-md-6"><label for="prodStock" class="form-label">Stock</label><input id="prodStock" type="number" class="form-control" required aria-label="Stock del producto" /></div>
+                  <div class="col-12"><label for="prodImage" class="form-label">URL imagen</label><input id="prodImage" class="form-control" placeholder="assets/img/figure-1.svg" aria-label="URL de imagen del producto" /></div>
+                  <div class="col-12"><label for="prodDesc" class="form-label">Descripción</label><textarea id="prodDesc" class="form-control" rows="3" required aria-label="Descripción del producto"></textarea></div>
+                  <div class="col-12"><label for="prodActive" class="check-line"><input id="prodActive" type="checkbox" checked aria-label="Producto activo" /> Producto activo</label></div>
                   <div class="col-12"><button class="btn btn-gradient w-100" type="submit">Guardar producto</button></div>
                 </form>
               </div>
@@ -418,10 +419,10 @@
         </div>
         <div class="modal-body">
           <form id="employeeForm" class="row g-3">
-            <div class="col-12"><label class="form-label">Nombre completo</label><input id="empName" class="form-control" required /></div>
-            <div class="col-12"><label class="form-label">Correo</label><input id="empEmail" type="email" class="form-control" required /></div>
-            <div class="col-12"><label class="form-label">Contraseña temporal</label><div class="password-box"><input id="empPassword" type="password" class="form-control" required minlength="6" /><button class="btn password-toggle" type="button" onclick="Omega.togglePassword('empPassword', this)"><i class="bi bi-eye"></i></button></div></div>
-            <div class="col-12"><label class="form-label">Teléfono</label><input id="empPhone" class="form-control" /></div>
+            <div class="col-12"><label for="empName" class="form-label">Nombre completo</label><input id="empName" class="form-control" required aria-label="Nombre del empleado" /></div>
+            <div class="col-12"><label for="empEmail" class="form-label">Correo</label><input id="empEmail" type="email" class="form-control" required aria-label="Correo del empleado" /></div>
+            <div class="col-12"><label for="empPassword" class="form-label">Contraseña temporal</label><div class="password-box"><input id="empPassword" type="password" class="form-control" required minlength="6" aria-label="Contraseña temporal del empleado" /><button class="btn password-toggle" type="button" onclick="Omega.togglePassword('empPassword', this)" aria-label="Mostrar u ocultar contraseña"><i class="bi bi-eye"></i></button></div></div>
+            <div class="col-12"><label for="empPhone" class="form-label">Teléfono</label><input id="empPhone" class="form-control" aria-label="Teléfono del empleado" /></div>
             <div class="col-12"><button class="btn btn-gradient w-100" type="submit">Guardar empleado</button></div>
           </form>
         </div>
@@ -436,5 +437,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="assets/js/supabase-config.js"></script>
   <script src="assets/js/app.js"></script>
+  <script src="assets/js/i18n.js"></script>
 </body>
 </html>
