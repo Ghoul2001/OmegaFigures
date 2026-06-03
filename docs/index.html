@@ -27,9 +27,10 @@
           <ul class="navbar-nav mx-auto mb-2 mb-xl-0 gap-xl-1">
             <li class="nav-item"><a class="nav-link" href="#page-inicio" data-route="inicio"><i class="bi bi-house-door me-1"></i>Inicio</a></li>
             <li class="nav-item"><a class="nav-link" href="#page-productos" data-route="productos"><i class="bi bi-grid me-1"></i>Productos</a></li>
-            <li class="nav-item nav-client"><a class="nav-link" href="#page-mis-compras" data-route="mis-compras"><i class="bi bi-bag-check me-1"></i>Mis compras</a></li>
-            <li class="nav-item nav-admin"><a class="nav-link" href="#page-admin" data-route="admin"><i class="bi bi-bar-chart-line me-1"></i>Admin</a></li>
-            <li class="nav-item nav-employee"><a class="nav-link" href="#page-empleado" data-route="empleado"><i class="bi bi-tools me-1"></i>Empleado</a></li>
+            <li class="nav-item"><a class="nav-link" href="#page-experiencia3d" data-route="experiencia3d"><i class="bi bi-box me-1"></i>3D</a></li>
+            <li class="nav-item nav-client" hidden><a class="nav-link" href="#page-mis-compras" data-route="mis-compras"><i class="bi bi-bag-check me-1"></i>Mis compras</a></li>
+            <li class="nav-item nav-admin" hidden><a class="nav-link" href="#page-admin" data-route="admin"><i class="bi bi-bar-chart-line me-1"></i>Admin</a></li>
+            <li class="nav-item nav-employee" hidden><a class="nav-link" href="#page-empleado" data-route="empleado"><i class="bi bi-tools me-1"></i>Empleado</a></li>
             <li class="nav-item"><a class="nav-link" href="#page-contacto" data-route="contacto"><i class="bi bi-share me-1"></i>Redes</a></li>
           </ul>
 
@@ -94,6 +95,51 @@
             <p>Tarjetas interactivas con vista completa, detalles y selección de cantidad.</p>
           </div>
           <div id="featuredProducts" class="row g-4"></div>
+        </div>
+      </section>
+
+
+      <section id="page-experiencia3d" class="page-section">
+        <div class="container py-5">
+          <div class="section-heading mb-4 text-center">
+            <span class="eyebrow"><i class="bi bi-box me-1"></i> Experiencia 3D</span>
+            <h2>Visor 3D interactivo</h2>
+            <p>Explora una figura en una tarjeta 3D, gira el modelo con el cursor y prueba el efecto Spring.</p>
+          </div>
+
+          <div class="row g-4 align-items-stretch">
+            <div class="col-xl-7">
+              <div class="viewer-3d-card">
+                <div id="viewer3DStage" class="viewer-3d-stage" onmousemove="Omega.move3DViewer(event)" onmouseleave="Omega.reset3DViewer()">
+                  <div class="spring-rings" aria-hidden="true"><span></span><span></span><span></span></div>
+                  <div id="viewer3DObject" class="viewer-3d-object">
+                    <div class="viewer-3d-glow"></div>
+                    <img id="viewer3DImage" src="assets/img/figure-1.svg" alt="Figura 3D OmegaFiguresWeb" />
+                    <div class="viewer-3d-shadow"></div>
+                  </div>
+                </div>
+                <div class="viewer-actions mt-3">
+                  <button class="btn btn-gradient" type="button" onclick="Omega.triggerSpring3D()"><i class="bi bi-soundwave me-1"></i> Activar Spring</button>
+                  <button class="btn btn-soft" type="button" onclick="Omega.reset3DViewer()"><i class="bi bi-arrow-counterclockwise me-1"></i> Reiniciar vista</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-xl-5">
+              <div class="viewer-info-card h-100">
+                <span class="badge-soft mb-3">Modelo seleccionado</span>
+                <h3 id="viewer3DTitle">Cyberpunk Collector Bot</h3>
+                <p id="viewer3DDescription" class="text-secondary">Figura futurista con casco neón, acabado tecnológico y base decorativa.</p>
+                <div class="viewer-specs">
+                  <div><strong id="viewer3DGenre">Cyberpunk</strong><span>Género</span></div>
+                  <div><strong id="viewer3DCategory">Figura</strong><span>Categoría</span></div>
+                  <div><strong id="viewer3DPrice">$54.99</strong><span>Precio</span></div>
+                </div>
+                <div id="viewer3DList" class="viewer-product-list mt-4"></div>
+                <p class="small text-secondary mt-3 mb-0"><i class="bi bi-info-circle me-1"></i> Este apartado usa CSS 3D y animación tipo Spring, compatible con GitHub Pages.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -168,7 +214,7 @@
                 <div class="summary-line"><span>Subtotal</span><strong id="cartSubtotal">$0.00</strong></div>
                 <div class="summary-line"><span>Envío</span><strong>$0.00</strong></div>
                 <div class="summary-total"><span>Total</span><strong id="cartTotal">$0.00</strong></div>
-                <button class="btn btn-gradient w-100 mt-3" type="button" onclick="Omega.checkout()"><i class="bi bi-credit-card me-2"></i>Finalizar compra</button>
+                <button class="btn btn-gradient w-100 mt-3" type="button" onclick="Omega.openCheckout()"><i class="bi bi-credit-card me-2"></i>Finalizar compra</button>
                 <button class="btn btn-soft w-100 mt-2" type="button" onclick="Omega.navigate('productos')">Seguir comprando</button>
                 <p class="small text-secondary mt-3 mb-0">Las compras se registran en la base de datos SQL configurada para OmegaFiguresWeb.</p>
               </div>
@@ -212,20 +258,25 @@
                 <p class="text-secondary">Formulario completo con intereses para recibir información.</p>
                 <form id="registerForm" class="mt-4">
                   <div class="row g-3">
-                    <div class="col-md-6"><label for="regName" class="form-label">Nombre completo</label><input id="regName" class="form-control" required aria-label="Nombre completo" /></div>
-                    <div class="col-md-6"><label for="regEmail" class="form-label">Correo</label><input id="regEmail" type="email" class="form-control" required aria-label="Correo" /></div>
-                    <div class="col-md-6"><label for="regPhone" class="form-label">Teléfono</label><input id="regPhone" class="form-control" placeholder="+593..." aria-label="Teléfono" /></div>
-                    <div class="col-md-6"><label for="regBirth" class="form-label">Fecha de nacimiento</label><input id="regBirth" type="date" class="form-control" aria-label="Fecha de nacimiento" /></div>
-                    <div class="col-md-6"><label for="regCity" class="form-label">Ciudad</label><input id="regCity" class="form-control" aria-label="Ciudad" /></div>
-                    <div class="col-md-6"><label for="regCountry" class="form-label">País</label><input id="regCountry" class="form-control" value="Ecuador" aria-label="País" /></div>
-                    <div class="col-12"><label for="regAddress" class="form-label">Dirección</label><input id="regAddress" class="form-control" aria-label="Dirección" /></div>
+                    <div class="col-md-6"><label for="regName" class="form-label">Nombre completo</label><input id="regName" class="form-control" required aria-label="Nombre completo" /><div class="invalid-feedback">Ingresa nombre y apellido.</div></div>
+                    <div class="col-md-6"><label for="regEmail" class="form-label">Correo</label><input id="regEmail" type="email" class="form-control" required aria-label="Correo" /><div class="invalid-feedback">Ingresa un correo válido.</div></div>
+                    <div class="col-md-6"><label for="regPhone" class="form-label">Teléfono</label><input id="regPhone" class="form-control" placeholder="+593..." aria-label="Teléfono" /><div class="invalid-feedback">Ingresa un teléfono válido.</div></div>
+                    <div class="col-md-6">
+                      <label for="regBirth" class="form-label">Fecha de nacimiento</label>
+                      <input id="regBirth" type="date" class="form-control" required aria-label="Fecha de nacimiento" />
+                      <div class="form-text">Debes tener mínimo 13 años para registrarte.</div>
+                      <div class="invalid-feedback">Ingresa una fecha válida. Edad permitida: 13 a 100 años.</div>
+                    </div>
+                    <div class="col-md-6"><label for="regCity" class="form-label">Ciudad</label><input id="regCity" class="form-control" aria-label="Ciudad" /><div class="invalid-feedback">Ingresa tu ciudad.</div></div>
+                    <div class="col-md-6"><label for="regCountry" class="form-label">País</label><input id="regCountry" class="form-control" value="Ecuador" aria-label="País" /><div class="invalid-feedback">Ingresa tu país.</div></div>
+                    <div class="col-12"><label for="regAddress" class="form-label">Dirección</label><input id="regAddress" class="form-control" aria-label="Dirección" /><div class="invalid-feedback">Ingresa una dirección de referencia.</div></div>
                     <div class="col-md-6">
                       <label for="regPassword" class="form-label">Contraseña</label>
-                      <div class="password-box"><input id="regPassword" type="password" class="form-control" required minlength="6" aria-label="Contraseña" /><button class="btn password-toggle" type="button" onclick="Omega.togglePassword('regPassword', this)" aria-label="Mostrar u ocultar contraseña"><i class="bi bi-eye"></i></button></div>
+                      <div class="password-box"><input id="regPassword" type="password" class="form-control" required minlength="8" aria-label="Contraseña" /><button class="btn password-toggle" type="button" onclick="Omega.togglePassword('regPassword', this)" aria-label="Mostrar u ocultar contraseña"><i class="bi bi-eye"></i></button></div><div class="form-text">Mínimo 8 caracteres, con mayúscula, minúscula y número.</div><div class="invalid-feedback d-block password-feedback d-none" id="regPasswordFeedback">La contraseña no cumple los requisitos.</div>
                     </div>
                     <div class="col-md-6">
                       <label for="regConfirm" class="form-label">Confirmar contraseña</label>
-                      <div class="password-box"><input id="regConfirm" type="password" class="form-control" required minlength="6" aria-label="Confirmar contraseña" /><button class="btn password-toggle" type="button" onclick="Omega.togglePassword('regConfirm', this)" aria-label="Mostrar u ocultar contraseña"><i class="bi bi-eye"></i></button></div>
+                      <div class="password-box"><input id="regConfirm" type="password" class="form-control" required minlength="8" aria-label="Confirmar contraseña" /><button class="btn password-toggle" type="button" onclick="Omega.togglePassword('regConfirm', this)" aria-label="Mostrar u ocultar contraseña"><i class="bi bi-eye"></i></button></div><div class="invalid-feedback d-block password-feedback d-none" id="regConfirmFeedback">Las contraseñas no coinciden.</div>
                     </div>
                     <div class="col-12">
                       <p class="form-label mb-2">¿Qué información te gustaría recibir?</p>
@@ -428,6 +479,161 @@
         </div>
       </div>
     </div>
+  </div>
+
+
+  <div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl modal-fullscreen-lg-down">
+      <div class="modal-content omega-modal checkout-modal">
+        <div class="modal-header border-0 align-items-start">
+          <div>
+            <span class="eyebrow mb-2">Pago seguro</span>
+            <h5 class="modal-title fs-3 fw-black">Finalización de compra</h5>
+            <p class="text-secondary mb-0">Completa los datos de entrega y valida la tarjeta antes de registrar tu pedido.</p>
+          </div>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+        </div>
+        <div class="modal-body pt-0">
+          <form id="checkoutForm" class="row g-4" novalidate>
+            <div class="col-lg-7">
+              <div class="checkout-step-card mb-4">
+                <div class="checkout-step-title"><span>1</span><h6>Datos de entrega</h6></div>
+                <div class="row g-3">
+                  <div class="col-md-6">
+                    <label for="checkoutName" class="form-label">Nombre de quien recibe</label>
+                    <input id="checkoutName" class="form-control" required placeholder="Nombre completo" autocomplete="name" />
+                    <div class="invalid-feedback">Ingresa el nombre de la persona que recibe.</div>
+                  </div>
+                  <div class="col-md-6">
+                    <label for="checkoutPhone" class="form-label">Teléfono de contacto</label>
+                    <input id="checkoutPhone" class="form-control" required placeholder="+593..." autocomplete="tel" />
+                    <div class="invalid-feedback">Ingresa un teléfono de contacto.</div>
+                  </div>
+                  <div class="col-md-7">
+                    <label for="checkoutAddress" class="form-label">Dirección de envío</label>
+                    <input id="checkoutAddress" class="form-control" required placeholder="Calle principal, número, referencia" autocomplete="street-address" />
+                    <div class="invalid-feedback">Ingresa una dirección de envío.</div>
+                  </div>
+                  <div class="col-md-3">
+                    <label for="checkoutCity" class="form-label">Ciudad</label>
+                    <input id="checkoutCity" class="form-control" required placeholder="Quito" autocomplete="address-level2" />
+                    <div class="invalid-feedback">Ingresa la ciudad.</div>
+                  </div>
+                  <div class="col-md-2">
+                    <label for="checkoutCountry" class="form-label">País</label>
+                    <input id="checkoutCountry" class="form-control" required placeholder="EC" autocomplete="country-name" />
+                    <div class="invalid-feedback">Ingresa el país.</div>
+                  </div>
+                  <div class="col-12">
+                    <label for="checkoutNotes" class="form-label">Notas para la entrega</label>
+                    <textarea id="checkoutNotes" class="form-control" rows="2" placeholder="Ejemplo: entregar en recepción, llamar antes de llegar..."></textarea>
+                  </div>
+                </div>
+              </div>
+
+              <div class="checkout-step-card">
+                <div class="checkout-step-title"><span>2</span><h6>Método de pago</h6></div>
+                <div class="payment-method-grid mb-3">
+                  <label class="payment-method active">
+                    <input type="radio" name="paymentMethod" value="CARD" checked />
+                    <i class="bi bi-credit-card-2-front"></i>
+                    <span>Tarjeta</span>
+                  </label>
+                  <label class="payment-method">
+                    <input type="radio" name="paymentMethod" value="TRANSFER" />
+                    <i class="bi bi-bank"></i>
+                    <span>Transferencia</span>
+                  </label>
+                </div>
+
+                <div id="cardFields" class="card-fields">
+                  <div class="credit-card-preview mb-3">
+                    <div>
+                      <small>Omega Secure Card</small>
+                      <strong id="cardPreviewNumber">•••• •••• •••• ••••</strong>
+                    </div>
+                    <div class="d-flex justify-content-between align-items-end">
+                      <span id="cardPreviewName">NOMBRE APELLIDO</span>
+                      <span id="cardBrandBadge">CARD</span>
+                    </div>
+                  </div>
+
+                  <div class="row g-3">
+                    <div class="col-12">
+                      <label for="cardName" class="form-label">Nombre en la tarjeta</label>
+                      <input id="cardName" class="form-control" required placeholder="Como aparece en la tarjeta" autocomplete="cc-name" />
+                      <div class="invalid-feedback">Ingresa nombre y apellido como aparecen en la tarjeta.</div>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="payerBirth" class="form-label">Fecha de nacimiento del titular</label>
+                      <input id="payerBirth" type="date" class="form-control" required autocomplete="bday" />
+                      <div class="form-text">Para pagar con tarjeta debes ser mayor de 18 años.</div>
+                      <div class="invalid-feedback">El titular debe tener entre 18 y 100 años.</div>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="payerId" class="form-label">Cédula / identificación</label>
+                      <input id="payerId" class="form-control" inputmode="numeric" maxlength="15" placeholder="Opcional para validación" autocomplete="off" />
+                      <div class="invalid-feedback">Ingresa una identificación válida o deja el campo vacío.</div>
+                    </div>
+                    <div class="col-12">
+                      <label for="cardNumber" class="form-label">Número de tarjeta</label>
+                      <div class="input-icon">
+                        <i class="bi bi-credit-card"></i>
+                        <input id="cardNumber" class="form-control" required inputmode="numeric" maxlength="23" placeholder="0000 0000 0000 0000" autocomplete="cc-number" />
+                      </div>
+                      <div class="invalid-feedback">Ingresa una tarjeta válida: 13 a 19 dígitos, sin números repetidos y con validación Luhn.</div>
+                      <div id="cardValidationHint" class="payment-validation-hint mt-2">Usa una tarjeta válida. Ejemplo de prueba: 4242 4242 4242 4242.</div>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="cardExpiry" class="form-label">Vencimiento</label>
+                      <input id="cardExpiry" class="form-control" required inputmode="numeric" maxlength="5" placeholder="MM/AA" autocomplete="cc-exp" />
+                      <div class="invalid-feedback">Ingresa un vencimiento válido, no vencido y no mayor a 10 años.</div>
+                    </div>
+                    <div class="col-md-6">
+                      <label for="cardCvv" class="form-label">CVV</label>
+                      <input id="cardCvv" class="form-control" required type="password" inputmode="numeric" maxlength="4" placeholder="123" autocomplete="cc-csc" />
+                      <div class="invalid-feedback">CVV inválido. Visa/Mastercard/Discover usan 3 dígitos y Amex usa 4.</div>
+                    </div>
+                  </div>
+                  <div class="secure-note mt-3"><i class="bi bi-shield-lock"></i><span>No se guarda el número completo de tarjeta ni el CVV. Solo se registra el método de pago y los últimos 4 dígitos.</span></div>
+                </div>
+
+                <div id="transferFields" class="transfer-fields d-none">
+                  <div class="alert alert-info rounded-4 mb-0">
+                    <strong>Pago por transferencia.</strong><br>
+                    El pedido quedará como <strong>PENDIENTE</strong>. El empleado podrá aprobarlo cuando verifique el pago.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-5">
+              <div class="checkout-summary-card sticky-lg-top">
+                <h5>Resumen del pedido</h5>
+                <div id="checkoutSummaryItems" class="checkout-summary-items"></div>
+                <hr class="border-secondary-subtle" />
+                <div class="summary-line"><span>Subtotal</span><strong id="checkoutSubtotal">$0.00</strong></div>
+                <div class="summary-line"><span>Envío</span><strong id="checkoutShipping">$0.00</strong></div>
+                <div class="summary-total"><span>Total a pagar</span><strong id="checkoutTotal">$0.00</strong></div>
+                <div class="form-check mt-3">
+                  <input id="checkoutTerms" class="form-check-input" type="checkbox" required />
+                  <label for="checkoutTerms" class="form-check-label small">Confirmo que los datos ingresados son correctos y acepto registrar la compra.</label>
+                  <div class="invalid-feedback">Debes aceptar la confirmación para finalizar.</div>
+                </div>
+                <button id="checkoutSubmitBtn" class="btn btn-gradient w-100 mt-3" type="submit"><i class="bi bi-lock-fill me-2"></i>Confirmar compra</button>
+                <button class="btn btn-soft w-100 mt-2" type="button" data-bs-dismiss="modal">Volver al carrito</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <div id="sharkMascot" class="shark-mascot" role="button" tabindex="0" aria-label="Mascota Omega Shark" onclick="Omega.toggleSharkMessage()">
+    <div id="sharkBubble" class="shark-bubble">¡Hola! Soy Omega Shark. Te acompaño mientras navegas.</div>
+    <img src="assets/img/omega-shark.svg" alt="Mascota tiburón Omega Shark" />
   </div>
 
   <div id="toastArea" class="toast-area"></div>

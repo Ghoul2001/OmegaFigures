@@ -3,7 +3,11 @@ const Omega = (() => {
     cart: 'omega_official_cart_v1',
     session: 'omega_official_session_v1',
     theme: 'omega_official_theme_v1',
-    lang: 'omega_official_lang_v1'
+    lang: 'omega_official_lang_v1',
+    users: 'omega_official_users_local_v1',
+    products: 'omega_official_products_local_v1',
+    orders: 'omega_official_orders_local_v1',
+    seeded: 'omega_official_seeded_local_v1'
   };
 
   const config = window.OMEGA_SUPABASE || {};
@@ -19,6 +23,7 @@ const Omega = (() => {
 
   let adminChart = null;
   let currentOrderFilter = 'ALL';
+  let current3DProductId = null;
   let state = {
     users: [],
     products: [],
@@ -34,6 +39,76 @@ const Omega = (() => {
     try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
   };
   const setLocal = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+
+
+  function seedLocalData() {
+    if (localStorage.getItem(LS.seeded)) return;
+
+    const initialUsers = [
+      {
+        id: 'u_admin', name: 'Administrador Omega', email: 'admin@omegafigures.com',
+        passwordHash: '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9',
+        role: 'ADMIN', phone: '+593000000000', address: 'Oficina principal', city: 'Quito', country: 'Ecuador',
+        birthDate: '', interests: ['Estadísticas'], newsletter: false, createdAt: '2026-05-01T09:00:00.000Z'
+      },
+      {
+        id: 'u_emp', name: 'Empleado Omega', email: 'empleado@omegafigures.com',
+        passwordHash: 'ccc13e8ab0819e3ab61719de4071ecae6c1d3cd35dc48b91cad3481f20922f9f',
+        role: 'EMPLEADO', phone: '+593000000001', address: 'Sucursal online', city: 'Quito', country: 'Ecuador',
+        birthDate: '', interests: ['Gestión'], newsletter: false, createdAt: '2026-05-02T09:00:00.000Z'
+      },
+      {
+        id: 'u_cli', name: 'Cliente Omega', email: 'cliente@omegafigures.com',
+        passwordHash: '09a31a7001e261ab1e056182a71d3cf57f582ca9a29cff5eb83be0f0549730a9',
+        role: 'CLIENTE', phone: '+593000000002', address: 'Dirección principal', city: 'Quito', country: 'Ecuador',
+        birthDate: '', interests: ['Anime','Promociones'], newsletter: true, createdAt: '2026-05-03T09:00:00.000Z'
+      }
+    ];
+
+    const initialProducts = [
+      { id: 'p1', name: 'Cyberpunk Collector Bot', category: 'Figura', genre: 'Cyberpunk', description: 'Figura futurista con casco neón, acabado tecnológico y base decorativa.', price: 54.99, stock: 9, image: 'assets/img/figure-1.svg', active: true, featured: true, createdAt: nowDate() },
+      { id: 'p2', name: 'Omega Ninja Shadow', category: 'Figura', genre: 'Anime', description: 'Figura ninja de colección con traje oscuro, armas decorativas y estilo moderno.', price: 39.99, stock: 12, image: 'assets/img/figure-2.svg', active: true, featured: true, createdAt: nowDate() },
+      { id: 'p3', name: 'Retro Pixel Warrior', category: 'Coleccionable', genre: 'Retro', description: 'Figura inspirada en videojuegos clásicos, perfecta para amantes del estilo vintage.', price: 24.99, stock: 18, image: 'assets/img/figure-3.svg', active: true, featured: true, createdAt: nowDate() },
+      { id: 'p4', name: 'Dragon Guardian Statue', category: 'Estatua', genre: 'Fantasía', description: 'Estatua de dragón con acabado de fantasía, textura detallada y base de exhibición.', price: 74.99, stock: 7, image: 'assets/img/figure-4.svg', active: true, featured: true, createdAt: nowDate() },
+      { id: 'p5', name: 'Galaxy Space Ranger', category: 'Figura', genre: 'Ciencia ficción', description: 'Figura espacial con armadura brillante y detalles galácticos.', price: 64.50, stock: 11, image: 'assets/img/figure-5.svg', active: true, featured: false, createdAt: nowDate() },
+      { id: 'p6', name: 'Samurai Flame Edition', category: 'Coleccionable', genre: 'Anime', description: 'Samurái edición especial con colores intensos y accesorios intercambiables.', price: 49.90, stock: 14, image: 'assets/img/figure-6.svg', active: true, featured: false, createdAt: nowDate() },
+      { id: 'p7', name: 'Dark Knight Mini Statue', category: 'Estatua', genre: 'Héroes', description: 'Mini estatua de estilo oscuro para exhibición en escritorio o repisa.', price: 34.75, stock: 16, image: 'assets/img/figure-7.svg', active: true, featured: false, createdAt: nowDate() },
+      { id: 'p8', name: 'Arcade Robot Classic', category: 'Figura', genre: 'Retro', description: 'Robot de colección con estética arcade y acabado brillante.', price: 29.99, stock: 20, image: 'assets/img/figure-8.svg', active: true, featured: false, createdAt: nowDate() }
+    ];
+
+    const initialOrders = [
+      {
+        id: 'o1', userId: 'u_cli', createdAt: '2026-05-04T11:20:00.000Z', status: 'PENDIENTE', total: 54.99,
+        customerName: 'Cliente Omega', shippingPhone: '+593000000002', shippingAddress: 'Dirección principal', shippingCity: 'Quito', shippingCountry: 'Ecuador', shippingNotes: '', paymentMethod: 'CARD', paymentBrand: 'VISA', paymentLast4: '4242',
+        items: [{ productId: 'p1', name: 'Cyberpunk Collector Bot', price: 54.99, quantity: 1, image: 'assets/img/figure-1.svg' }]
+      },
+      {
+        id: 'o2', userId: 'u_cli', createdAt: '2026-05-05T15:45:00.000Z', status: 'APROBADA', total: 49.98,
+        customerName: 'Cliente Omega', shippingPhone: '+593000000002', shippingAddress: 'Dirección principal', shippingCity: 'Quito', shippingCountry: 'Ecuador', shippingNotes: '', paymentMethod: 'TRANSFER', paymentBrand: 'TRANSFERENCIA', paymentLast4: '',
+        items: [{ productId: 'p3', name: 'Retro Pixel Warrior', price: 24.99, quantity: 2, image: 'assets/img/figure-3.svg' }]
+      }
+    ];
+
+    setLocal(LS.users, initialUsers);
+    setLocal(LS.products, initialProducts);
+    setLocal(LS.orders, initialOrders);
+    localStorage.setItem(LS.seeded, 'true');
+  }
+
+  function loadLocalAll() {
+    seedLocalData();
+    state.users = getLocal(LS.users, []);
+    state.products = getLocal(LS.products, []);
+    state.orders = getLocal(LS.orders, []);
+  }
+
+  function saveLocalAll() {
+    setLocal(LS.users, state.users);
+    setLocal(LS.products, state.products);
+    setLocal(LS.orders, state.orders);
+  }
+
+  const usingLocalData = () => !db;
 
   async function hashText(text) {
     const encoded = new TextEncoder().encode(text);
@@ -89,6 +164,15 @@ const Omega = (() => {
       createdAt: row.created_at,
       status: row.status,
       total: Number(row.total || 0),
+      customerName: row.customer_name || '',
+      shippingPhone: row.shipping_phone || '',
+      shippingAddress: row.shipping_address || '',
+      shippingCity: row.shipping_city || '',
+      shippingCountry: row.shipping_country || '',
+      shippingNotes: row.shipping_notes || '',
+      paymentMethod: row.payment_method || '',
+      paymentBrand: row.payment_brand || '',
+      paymentLast4: row.payment_last4 || '',
       items
     };
   }
@@ -103,7 +187,8 @@ const Omega = (() => {
 
   async function loadAll(showMessage = false) {
     if (!db) {
-      renderDbWarning();
+      loadLocalAll();
+      if (showMessage) toast('Datos actualizados en modo local.', 'success');
       return;
     }
 
@@ -161,8 +246,13 @@ const Omega = (() => {
   }
 
   async function navigate(route) {
-    const valid = ['inicio', 'productos', 'carrito', 'login', 'mis-compras', 'admin', 'empleado', 'contacto'];
+    route = String(route || 'inicio').replace(/^#/, '');
+    if (route.startsWith('page-')) route = route.slice(5);
+    const valid = ['inicio', 'productos', 'experiencia3d', 'carrito', 'login', 'mis-compras', 'admin', 'empleado', 'contacto'];
     if (!valid.includes(route)) route = '404';
+
+    updateNav();
+
     const user = currentUser();
     if (route === 'admin' && user?.role !== 'ADMIN') { toast('Acceso permitido solo para administrador.', 'danger'); route = user ? 'inicio' : 'login'; }
     if (route === 'empleado' && user?.role !== 'EMPLEADO') { toast('Acceso permitido solo para empleados.', 'danger'); route = user ? 'inicio' : 'login'; }
@@ -173,13 +263,15 @@ const Omega = (() => {
     document.querySelectorAll('.nav-link').forEach(a => a.classList.toggle('active', a.dataset.route === route));
     window.location.hash = route;
     await renderRoute(route);
+    sharkSay(route === 'experiencia3d' ? '¡Bienvenido al visor 3D!' : route === 'carrito' ? 'Revisa tus productos antes del pago.' : route === 'productos' ? 'Puedes filtrar por género y precio.' : 'Estoy aquí para ayudarte.');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   async function renderRoute(route) {
-    if (!db) { renderDbWarning(); return; }
+    updateNav();
     if (route === 'inicio') renderHome();
     if (route === 'productos') renderProducts();
+    if (route === 'experiencia3d') render3DExperience();
     if (route === 'carrito') renderCart();
     if (route === 'mis-compras') renderMyOrders();
     if (route === 'admin') renderAdmin();
@@ -189,11 +281,15 @@ const Omega = (() => {
 
   function updateNav() {
     const user = currentUser();
-    document.querySelectorAll('.nav-admin').forEach(e => e.style.display = user?.role === 'ADMIN' ? '' : 'none');
-    document.querySelectorAll('.nav-employee').forEach(e => e.style.display = user?.role === 'EMPLEADO' ? '' : 'none');
-    document.querySelectorAll('.nav-client').forEach(e => e.style.display = user?.role === 'CLIENTE' ? '' : 'none');
-    document.getElementById('authText').textContent = user ? `${user.name.split(' ')[0]} (${user.role})` : 'Ingresar';
-    document.getElementById('cartBadge').textContent = cart().reduce((acc, item) => acc + item.quantity, 0);
+    document.querySelectorAll('.nav-admin').forEach(e => { e.hidden = user?.role !== 'ADMIN'; });
+    document.querySelectorAll('.nav-employee').forEach(e => { e.hidden = user?.role !== 'EMPLEADO'; });
+    document.querySelectorAll('.nav-client').forEach(e => { e.hidden = user?.role !== 'CLIENTE'; });
+
+    const authText = document.getElementById('authText');
+    if (authText) authText.textContent = user ? `${user.name.split(' ')[0]} (${user.role})` : 'Ingresar';
+
+    const cartBadge = document.getElementById('cartBadge');
+    if (cartBadge) cartBadge.textContent = cart().reduce((acc, item) => acc + item.quantity, 0);
   }
 
   async function openAuthOrLogout() {
@@ -226,6 +322,63 @@ const Omega = (() => {
         </div>
       </article>
     </div>`;
+  }
+
+
+  function render3DExperience() {
+    const active = products().filter(p => p.active);
+    if (!active.length) return;
+    if (!current3DProductId || !active.some(p => p.id === current3DProductId)) current3DProductId = active[0].id;
+    const selected = active.find(p => p.id === current3DProductId) || active[0];
+    const img = document.getElementById('viewer3DImage');
+    if (!img) return;
+    img.src = selected.image;
+    img.alt = `Vista 3D de ${selected.name}`;
+    document.getElementById('viewer3DTitle').textContent = selected.name;
+    document.getElementById('viewer3DDescription').textContent = selected.description;
+    document.getElementById('viewer3DGenre').textContent = selected.genre;
+    document.getElementById('viewer3DCategory').textContent = selected.category;
+    document.getElementById('viewer3DPrice').textContent = money(selected.price);
+    const list = document.getElementById('viewer3DList');
+    if (list) {
+      list.innerHTML = active.slice(0, 8).map(p => `<button class="viewer-product-option ${p.id === selected.id ? 'active' : ''}" type="button" onclick="Omega.select3DProduct('${p.id}')">
+        <img src="${esc(p.image)}" alt="${esc(p.name)}">
+        <span><strong>${esc(p.name)}</strong><small>${esc(p.genre)} · ${money(p.price)}</small></span>
+      </button>`).join('');
+    }
+  }
+
+  function select3DProduct(productId) {
+    current3DProductId = productId;
+    render3DExperience();
+    triggerSpring3D();
+    toast('Modelo 3D actualizado.', 'success');
+  }
+
+  function move3DViewer(event) {
+    const stage = document.getElementById('viewer3DStage');
+    const obj = document.getElementById('viewer3DObject');
+    if (!stage || !obj) return;
+    const rect = stage.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width - 0.5) * 2;
+    const y = ((event.clientY - rect.top) / rect.height - 0.5) * 2;
+    const rotateY = x * 18;
+    const rotateX = -y * 14;
+    obj.style.transform = `rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateZ(12px)`;
+  }
+
+  function reset3DViewer() {
+    const obj = document.getElementById('viewer3DObject');
+    if (obj) obj.style.transform = 'rotateX(0deg) rotateY(0deg) translateZ(0)';
+  }
+
+  function triggerSpring3D() {
+    const obj = document.getElementById('viewer3DObject');
+    if (!obj) return;
+    obj.classList.remove('spring-active');
+    void obj.offsetWidth;
+    obj.classList.add('spring-active');
+    setTimeout(() => obj.classList.remove('spring-active'), 950);
   }
 
   function renderHome() {
@@ -325,44 +478,376 @@ const Omega = (() => {
     renderCart(); updateNav();
   }
 
-  async function checkout() {
+  function getCartDetails() {
+    const allProducts = products();
+    return cart().map(i => {
+      const product = allProducts.find(p => p.id === i.productId);
+      return product ? { ...i, product } : null;
+    }).filter(Boolean);
+  }
+
+  function getCartTotal(items = getCartDetails()) {
+    return items.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
+  }
+
+  function setInvalid(el, invalid) {
+    if (!el) return;
+    el.classList.toggle('is-invalid', Boolean(invalid));
+  }
+
+  function onlyDigits(value) {
+    return String(value || '').replace(/\D/g, '');
+  }
+
+
+  function calculateAge(dateValue) {
+    if (!dateValue) return null;
+    const birth = new Date(`${dateValue}T00:00:00`);
+    if (Number.isNaN(birth.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDiff = today.getMonth() - birth.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  }
+
+  function isValidAge(dateValue, minAge, maxAge = 100) {
+    const age = calculateAge(dateValue);
+    return age !== null && age >= minAge && age <= maxAge;
+  }
+
+  function validFullName(value) {
+    const text = String(value || '').trim().replace(/\s+/g, ' ');
+    return /^[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+(?:\s+[A-Za-zÁÉÍÓÚÜÑáéíóúüñ]+)+$/.test(text);
+  }
+
+  function validEmail(value) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(String(value || '').trim());
+  }
+
+  function validPassword(value) {
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(String(value || ''));
+  }
+
+  function validOptionalId(value) {
+    const digits = onlyDigits(value);
+    return digits.length === 0 || (digits.length >= 8 && digits.length <= 15);
+  }
+
+  function formatCardNumber(value) {
+    return onlyDigits(value).slice(0, 19).replace(/(.{4})/g, '$1 ').trim();
+  }
+
+  function detectCardBrand(number) {
+    const digits = onlyDigits(number);
+    if (/^4/.test(digits)) return 'VISA';
+    if (/^(5[1-5]|2[2-7])/.test(digits)) return 'MASTERCARD';
+    if (/^3[47]/.test(digits)) return 'AMEX';
+    if (/^6(?:011|5)/.test(digits)) return 'DISCOVER';
+    return 'CARD';
+  }
+
+  function validLuhn(number) {
+    const digits = onlyDigits(number);
+    if (digits.length < 13 || digits.length > 19) return false;
+    if (/(\d)\1{12,}/.test(digits)) return false;
+    const brand = detectCardBrand(digits);
+    if (brand === 'CARD') return false;
+    let sum = 0;
+    let shouldDouble = false;
+    for (let i = digits.length - 1; i >= 0; i--) {
+      let digit = Number(digits[i]);
+      if (shouldDouble) {
+        digit *= 2;
+        if (digit > 9) digit -= 9;
+      }
+      sum += digit;
+      shouldDouble = !shouldDouble;
+    }
+    return sum % 10 === 0;
+  }
+
+  function formatExpiry(value) {
+    const digits = onlyDigits(value).slice(0, 4);
+    if (digits.length <= 2) return digits;
+    return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  }
+
+  function validExpiry(value) {
+    const match = String(value || '').match(/^(\d{2})\/(\d{2})$/);
+    if (!match) return false;
+    const month = Number(match[1]);
+    const year = Number(`20${match[2]}`);
+    if (month < 1 || month > 12) return false;
+    const now = new Date();
+    const expiry = new Date(year, month, 0, 23, 59, 59);
+    const maxExpiry = new Date(now.getFullYear() + 10, now.getMonth() + 1, 0, 23, 59, 59);
+    return expiry >= now && expiry <= maxExpiry;
+  }
+
+  function updateCardPreview() {
+    const numberInput = document.getElementById('cardNumber');
+    const nameInput = document.getElementById('cardName');
+    const number = numberInput?.value || '';
+    const digits = onlyDigits(number);
+    const brand = detectCardBrand(number);
+    const previewNumber = digits
+      ? formatCardNumber(digits.padEnd(16, '•')).replace(/•/g, '•')
+      : '•••• •••• •••• ••••';
+    document.getElementById('cardPreviewNumber').textContent = previewNumber;
+    document.getElementById('cardPreviewName').textContent = (nameInput?.value || 'NOMBRE APELLIDO').toUpperCase();
+    document.getElementById('cardBrandBadge').textContent = brand;
+    updatePaymentValidationHint();
+  }
+
+
+  function updatePaymentValidationHint() {
+    const hint = document.getElementById('cardValidationHint');
+    const number = document.getElementById('cardNumber')?.value || '';
+    if (!hint) return;
+    const digits = onlyDigits(number);
+    if (!digits.length) {
+      hint.className = 'payment-validation-hint mt-2';
+      hint.textContent = 'Usa una tarjeta válida. Ejemplo de prueba: 4242 4242 4242 4242.';
+      return;
+    }
+    const brand = detectCardBrand(number);
+    if (validLuhn(number)) {
+      hint.className = 'payment-validation-hint mt-2 valid';
+      hint.textContent = `Tarjeta ${brand} válida. Se guardarán solo los últimos 4 dígitos.`;
+    } else {
+      hint.className = 'payment-validation-hint mt-2 invalid';
+      hint.textContent = 'El número no supera la validación Luhn. Revisa los dígitos.';
+    }
+  }
+
+  function togglePaymentFields() {
+    const method = document.querySelector('input[name="paymentMethod"]:checked')?.value || 'CARD';
+    document.getElementById('cardFields')?.classList.toggle('d-none', method !== 'CARD');
+    document.getElementById('transferFields')?.classList.toggle('d-none', method !== 'TRANSFER');
+    document.querySelectorAll('.payment-method').forEach(label => {
+      const input = label.querySelector('input');
+      label.classList.toggle('active', input?.checked);
+    });
+  }
+
+  function renderCheckoutSummary() {
+    const items = getCartDetails();
+    const box = document.getElementById('checkoutSummaryItems');
+    if (!box) return;
+    box.innerHTML = items.map(item => `<div class="checkout-summary-item">
+      <img src="${esc(item.product.image)}" alt="${esc(item.product.name)}">
+      <div class="flex-grow-1">
+        <strong>${esc(item.product.name)}</strong>
+        <small>${item.quantity} x ${money(item.product.price)}</small>
+      </div>
+      <span>${money(item.product.price * item.quantity)}</span>
+    </div>`).join('');
+    const total = getCartTotal(items);
+    document.getElementById('checkoutSubtotal').textContent = money(total);
+    document.getElementById('checkoutShipping').textContent = money(0);
+    document.getElementById('checkoutTotal').textContent = money(total);
+  }
+
+  function prefillCheckoutForm() {
+    const user = currentUser();
+    if (!user) return;
+    document.getElementById('checkoutName').value = user.name || '';
+    document.getElementById('checkoutPhone').value = user.phone || '';
+    document.getElementById('checkoutAddress').value = user.address || '';
+    document.getElementById('checkoutCity').value = user.city || '';
+    document.getElementById('checkoutCountry').value = user.country || 'Ecuador';
+    document.getElementById('cardName').value = user.name || '';
+    document.getElementById('payerBirth').value = user.birthDate || user.birth_date || '';
+    document.getElementById('payerId').value = '';
+    document.getElementById('checkoutNotes').value = '';
+    document.getElementById('cardNumber').value = '';
+    document.getElementById('cardExpiry').value = '';
+    document.getElementById('cardCvv').value = '';
+    document.getElementById('checkoutTerms').checked = false;
+    document.querySelectorAll('#checkoutForm .is-invalid, #checkoutForm .is-valid').forEach(el => el.classList.remove('is-invalid', 'is-valid'));
+    updateCardPreview();
+    togglePaymentFields();
+  }
+
+  function openCheckout() {
     if (!db) return toast('Configura la base de datos antes de finalizar compras.', 'danger');
     const user = currentUser();
-    if (!user || user.role !== 'CLIENTE') { toast('Debes iniciar sesión como cliente para finalizar la compra.', 'danger'); return navigate('login'); }
+    if (!user || user.role !== 'CLIENTE') {
+      toast('Debes iniciar sesión como cliente para finalizar la compra.', 'danger');
+      return navigate('login');
+    }
+    if (!cart().length) return toast('El carrito está vacío.', 'danger');
+    prefillCheckoutForm();
+    renderCheckoutSummary();
+    bootstrap.Modal.getOrCreateInstance(document.getElementById('checkoutModal')).show();
+  }
+
+  function validateCheckoutForm() {
+    const method = document.querySelector('input[name="paymentMethod"]:checked')?.value || 'CARD';
+    let valid = true;
+    const checkoutName = document.getElementById('checkoutName');
+    const checkoutPhone = document.getElementById('checkoutPhone');
+    const checkoutAddress = document.getElementById('checkoutAddress');
+    const checkoutCity = document.getElementById('checkoutCity');
+    const checkoutCountry = document.getElementById('checkoutCountry');
+
+    const validations = [
+      [checkoutName, String(checkoutName?.value || '').trim().length < 3],
+      [checkoutPhone, onlyDigits(checkoutPhone?.value).length < 9],
+      [checkoutAddress, String(checkoutAddress?.value || '').trim().length < 8],
+      [checkoutCity, String(checkoutCity?.value || '').trim().length < 2],
+      [checkoutCountry, String(checkoutCountry?.value || '').trim().length < 2]
+    ];
+    validations.forEach(([el, invalid]) => {
+      setInvalid(el, invalid);
+      el?.classList.toggle('is-valid', !invalid);
+      if (invalid) valid = false;
+    });
+
+    if (method === 'CARD') {
+      const cardName = document.getElementById('cardName');
+      const payerBirth = document.getElementById('payerBirth');
+      const payerId = document.getElementById('payerId');
+      const cardNumber = document.getElementById('cardNumber');
+      const cardExpiry = document.getElementById('cardExpiry');
+      const cardCvv = document.getElementById('cardCvv');
+      const cardNameInvalid = !validFullName(cardName.value);
+      const payerBirthInvalid = !isValidAge(payerBirth.value, 18, 100);
+      const payerIdInvalid = !validOptionalId(payerId.value);
+      const cardNumberInvalid = !validLuhn(cardNumber.value);
+      const cardExpiryInvalid = !validExpiry(cardExpiry.value);
+      const cvvDigits = onlyDigits(cardCvv.value);
+      const brand = detectCardBrand(cardNumber.value);
+      const requiredCvvLength = brand === 'AMEX' ? 4 : 3;
+      const cardCvvInvalid = cvvDigits.length !== requiredCvvLength || /^0+$/.test(cvvDigits);
+      [
+        [cardName, cardNameInvalid],
+        [payerBirth, payerBirthInvalid],
+        [payerId, payerIdInvalid],
+        [cardNumber, cardNumberInvalid],
+        [cardExpiry, cardExpiryInvalid],
+        [cardCvv, cardCvvInvalid]
+      ].forEach(([el, invalid]) => {
+        setInvalid(el, invalid);
+        el?.classList.toggle('is-valid', !invalid);
+        if (invalid) valid = false;
+      });
+    }
+
+    const terms = document.getElementById('checkoutTerms');
+    setInvalid(terms, !terms.checked);
+    if (!terms.checked) valid = false;
+    return valid;
+  }
+
+  async function checkout() {
+    if (!validateCheckoutForm()) {
+      toast('Revisa los datos de entrega y pago antes de continuar.', 'danger');
+      return;
+    }
+
+    const user = currentUser();
+    if (!user || user.role !== 'CLIENTE') {
+      toast('Debes iniciar sesión como cliente para finalizar la compra.', 'danger');
+      return navigate('login');
+    }
+
     const c = cart();
     if (!c.length) return toast('El carrito está vacío.', 'danger');
-    const allProducts = products();
-    const items = c.map(i => {
-      const p = allProducts.find(x => x.id === i.productId);
-      return { productId: p.id, name: p.name, price: p.price, quantity: i.quantity, image: p.image, stock: p.stock };
-    });
+
+    const items = getCartDetails().map(i => ({
+      productId: i.product.id,
+      name: i.product.name,
+      price: i.product.price,
+      quantity: i.quantity,
+      image: i.product.image,
+      stock: i.product.stock
+    }));
+
     const insufficient = items.find(i => i.quantity > i.stock);
     if (insufficient) return toast(`No hay stock suficiente para ${insufficient.name}.`, 'danger');
+
+    const paymentMethod = document.querySelector('input[name="paymentMethod"]:checked')?.value || 'CARD';
+    const cardNumber = document.getElementById('cardNumber').value;
+    const paymentLast4 = paymentMethod === 'CARD' ? onlyDigits(cardNumber).slice(-4) : null;
+    const paymentBrand = paymentMethod === 'CARD' ? detectCardBrand(cardNumber) : 'TRANSFERENCIA';
+
     const total = items.reduce((acc, i) => acc + i.price * i.quantity, 0);
     const orderId = uid('order');
+    const submitBtn = document.getElementById('checkoutSubmitBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Procesando...';
 
     try {
-      const { error: orderError } = await db.from('orders').insert({ id: orderId, user_id: user.id, created_at: nowDate(), status: 'PENDIENTE', total });
-      if (orderError) throw orderError;
+      const orderPayload = {
+        id: orderId,
+        user_id: user.id,
+        created_at: nowDate(),
+        status: 'PENDIENTE',
+        total,
+        customer_name: document.getElementById('checkoutName').value.trim(),
+        shipping_phone: document.getElementById('checkoutPhone').value.trim(),
+        shipping_address: document.getElementById('checkoutAddress').value.trim(),
+        shipping_city: document.getElementById('checkoutCity').value.trim(),
+        shipping_country: document.getElementById('checkoutCountry').value.trim(),
+        shipping_notes: document.getElementById('checkoutNotes').value.trim(),
+        payment_method: paymentMethod,
+        payment_brand: paymentBrand,
+        payment_last4: paymentLast4
+      };
 
-      const rows = items.map(i => ({ order_id: orderId, product_id: i.productId, name: i.name, price: i.price, quantity: i.quantity, image: i.image }));
-      const { error: itemError } = await db.from('order_items').insert(rows);
-      if (itemError) throw itemError;
+      if (db) {
+        const { error: orderError } = await db.from('orders').insert(orderPayload);
+        if (orderError) throw orderError;
 
-      for (const item of items) {
-        const newStock = Math.max(0, item.stock - item.quantity);
-        const { error: stockError } = await db.from('products').update({ stock: newStock }).eq('id', item.productId);
-        if (stockError) throw stockError;
+        const rows = items.map(i => ({ order_id: orderId, product_id: i.productId, name: i.name, price: i.price, quantity: i.quantity, image: i.image }));
+        const { error: itemError } = await db.from('order_items').insert(rows);
+        if (itemError) throw itemError;
+
+        for (const item of items) {
+          const newStock = Math.max(0, item.stock - item.quantity);
+          const { error: stockError } = await db.from('products').update({ stock: newStock }).eq('id', item.productId);
+          if (stockError) throw stockError;
+        }
+        await loadAll();
+      } else {
+        const localOrder = {
+          id: orderPayload.id,
+          userId: orderPayload.user_id,
+          createdAt: orderPayload.created_at,
+          status: orderPayload.status,
+          total: orderPayload.total,
+          customerName: orderPayload.customer_name,
+          shippingPhone: orderPayload.shipping_phone,
+          shippingAddress: orderPayload.shipping_address,
+          shippingCity: orderPayload.shipping_city,
+          shippingCountry: orderPayload.shipping_country,
+          shippingNotes: orderPayload.shipping_notes,
+          paymentMethod: orderPayload.payment_method,
+          paymentBrand: orderPayload.payment_brand,
+          paymentLast4: orderPayload.payment_last4,
+          items: items.map(i => ({ productId: i.productId, name: i.name, price: i.price, quantity: i.quantity, image: i.image }))
+        };
+        state.orders.unshift(localOrder);
+        items.forEach(item => {
+          const p = state.products.find(product => product.id === item.productId);
+          if (p) p.stock = Math.max(0, p.stock - item.quantity);
+        });
+        saveLocalAll();
       }
 
       setLocal(LS.cart, []);
-      await loadAll();
-      toast('Compra registrada como PENDIENTE.', 'success');
+      bootstrap.Modal.getInstance(document.getElementById('checkoutModal'))?.hide();
+      toast(`Compra registrada correctamente. Pago: ${paymentBrand}${paymentLast4 ? ` •••• ${paymentLast4}` : ''}.`, 'success');
       await renderAll();
       await navigate('mis-compras');
     } catch (error) {
       console.error(error);
       toast(`No se pudo registrar la compra: ${error.message}`, 'danger');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="bi bi-lock-fill me-2"></i>Confirmar compra';
     }
   }
 
@@ -379,6 +864,10 @@ const Omega = (() => {
       <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap"><div><h5>Orden ${esc(order.id)}</h5><p class="text-secondary mb-0">${new Date(order.createdAt).toLocaleString()}</p></div><span class="status-badge status-${order.status}">${order.status}</span></div>
       <hr class="border-secondary-subtle">
       ${order.items.map(i => `<div class="d-flex justify-content-between gap-3 mb-2"><span>${esc(i.name)} x ${i.quantity}</span><strong>${money(i.price * i.quantity)}</strong></div>`).join('')}
+      <div class="order-meta-grid mt-3">
+        ${order.shippingAddress ? `<span><i class="bi bi-geo-alt"></i> ${esc(order.shippingCity || '')} · ${esc(order.shippingAddress)}</span>` : ''}
+        ${order.paymentMethod ? `<span><i class="bi bi-credit-card"></i> ${esc(order.paymentBrand || order.paymentMethod)}${order.paymentLast4 ? ` •••• ${esc(order.paymentLast4)}` : ''}</span>` : ''}
+      </div>
       <div class="d-flex justify-content-between align-items-center mt-3"><strong>Total: ${money(order.total)}</strong>${actions ? orderActions(order) : ''}</div>
     </article>`;
   }
@@ -461,32 +950,71 @@ const Omega = (() => {
   }
 
   async function register() {
+    const form = document.getElementById('registerForm');
+    form.querySelectorAll('.is-invalid, .is-valid').forEach(el => el.classList.remove('is-invalid', 'is-valid'));
+    document.getElementById('regPasswordFeedback')?.classList.add('d-none');
+    document.getElementById('regConfirmFeedback')?.classList.add('d-none');
+
     const password = document.getElementById('regPassword').value;
     const confirm = document.getElementById('regConfirm').value;
-    const email = document.getElementById('regEmail').value.trim();
-    if (password.length < 6) return toast('La contraseña debe tener al menos 6 caracteres.', 'danger');
-    if (password !== confirm) return toast('Las contraseñas no coinciden.', 'danger');
+    const name = document.getElementById('regName');
+    const emailInput = document.getElementById('regEmail');
+    const phone = document.getElementById('regPhone');
+    const birth = document.getElementById('regBirth');
+    const city = document.getElementById('regCity');
+    const country = document.getElementById('regCountry');
+    const address = document.getElementById('regAddress');
+    const passwordInput = document.getElementById('regPassword');
+    const confirmInput = document.getElementById('regConfirm');
+    const email = emailInput.value.trim();
+
+    const checks = [
+      [name, !validFullName(name.value)],
+      [emailInput, !validEmail(email)],
+      [phone, phone.value.trim() && onlyDigits(phone.value).length < 9],
+      [birth, !isValidAge(birth.value, 13, 100)],
+      [city, String(city.value || '').trim().length < 2],
+      [country, String(country.value || '').trim().length < 2],
+      [address, String(address.value || '').trim().length < 6],
+      [passwordInput, !validPassword(password)],
+      [confirmInput, password !== confirm]
+    ];
+
+    let formValid = true;
+    checks.forEach(([el, invalid]) => {
+      setInvalid(el, invalid);
+      el?.classList.toggle('is-valid', !invalid);
+      if (invalid) formValid = false;
+    });
+    if (!validPassword(password)) document.getElementById('regPasswordFeedback')?.classList.remove('d-none');
+    if (password !== confirm) document.getElementById('regConfirmFeedback')?.classList.remove('d-none');
+    if (!formValid) return toast('Revisa los datos del registro antes de crear la cuenta.', 'danger');
     if (users().some(u => u.email.toLowerCase() === email.toLowerCase())) return toast('El correo ya existe.', 'danger');
     const interests = [...document.querySelectorAll('#registerForm .interest-grid input:checked')].map(i => i.value);
     const id = uid('user');
     const passwordHash = await hashText(password);
     const row = {
       id,
-      name: document.getElementById('regName').value.trim(),
+      name: name.value.trim().replace(/\s+/g, ' '),
       email,
       password_hash: passwordHash,
       role: 'CLIENTE',
-      phone: document.getElementById('regPhone').value.trim(),
-      address: document.getElementById('regAddress').value.trim(),
-      city: document.getElementById('regCity').value.trim(),
-      country: document.getElementById('regCountry').value.trim(),
-      birth_date: document.getElementById('regBirth').value || null,
+      phone: phone.value.trim(),
+      address: address.value.trim(),
+      city: city.value.trim(),
+      country: country.value.trim(),
+      birth_date: birth.value || null,
       interests,
       newsletter: document.getElementById('regNewsletter').checked,
       created_at: nowDate()
     };
-    const { error } = await db.from('users').insert(row);
-    if (error) return toast(`No se pudo crear la cuenta: ${error.message}`, 'danger');
+    if (db) {
+      const { error } = await db.from('users').insert(row);
+      if (error) return toast(`No se pudo crear la cuenta: ${error.message}`, 'danger');
+    } else {
+      state.users.unshift(mapUser(row));
+      saveLocalAll();
+    }
     setLocal(LS.session, { userId: id, loginAt: nowDate() });
     toast('Cuenta creada correctamente.', 'success');
     document.getElementById('registerForm').reset();
@@ -517,8 +1045,13 @@ const Omega = (() => {
       newsletter: false,
       created_at: nowDate()
     };
-    const { error } = await db.from('users').insert(row);
-    if (error) return toast(`No se pudo crear empleado: ${error.message}`, 'danger');
+    if (db) {
+      const { error } = await db.from('users').insert(row);
+      if (error) return toast(`No se pudo crear empleado: ${error.message}`, 'danger');
+    } else {
+      state.users.unshift(mapUser(row));
+      saveLocalAll();
+    }
     document.getElementById('employeeForm').reset();
     bootstrap.Modal.getInstance(document.getElementById('employeeModal')).hide();
     toast('Empleado creado correctamente.', 'success');
@@ -540,8 +1073,28 @@ const Omega = (() => {
       active: document.getElementById('prodActive').checked,
       featured: products().find(p => p.id === id)?.featured || false
     };
-    const { error } = await db.from('products').upsert(product, { onConflict: 'id' });
-    if (error) return toast(`No se pudo guardar producto: ${error.message}`, 'danger');
+    if (db) {
+      const { error } = await db.from('products').upsert(product, { onConflict: 'id' });
+      if (error) return toast(`No se pudo guardar producto: ${error.message}`, 'danger');
+    } else {
+      const normalized = mapProduct({
+        id: product.id,
+        name: product.name,
+        category: product.category,
+        genre: product.genre,
+        description: product.description,
+        price: product.price,
+        stock: product.stock,
+        image: product.image,
+        active: product.active,
+        featured: product.featured,
+        created_at: products().find(p => p.id === id)?.createdAt || nowDate()
+      });
+      const index = state.products.findIndex(p => p.id === id);
+      if (index >= 0) state.products[index] = normalized;
+      else state.products.unshift(normalized);
+      saveLocalAll();
+    }
     clearProductForm();
     toast('Producto guardado en la base SQL.', 'success');
     await loadAll();
@@ -573,18 +1126,29 @@ const Omega = (() => {
   async function toggleProduct(id) {
     const p = products().find(x => x.id === id);
     if (!p) return;
-    const { error } = await db.from('products').update({ active: !p.active }).eq('id', id);
-    if (error) return toast(`No se pudo actualizar producto: ${error.message}`, 'danger');
-    await loadAll();
+    if (db) {
+      const { error } = await db.from('products').update({ active: !p.active }).eq('id', id);
+      if (error) return toast(`No se pudo actualizar producto: ${error.message}`, 'danger');
+      await loadAll();
+    } else {
+      p.active = !p.active;
+      saveLocalAll();
+    }
     renderEmployee();
     renderProducts();
     toast('Estado actualizado.', 'success');
   }
 
   async function setOrderStatus(id, status) {
-    const { error } = await db.from('orders').update({ status }).eq('id', id);
-    if (error) return toast(`No se pudo actualizar pedido: ${error.message}`, 'danger');
-    await loadAll();
+    if (db) {
+      const { error } = await db.from('orders').update({ status }).eq('id', id);
+      if (error) return toast(`No se pudo actualizar pedido: ${error.message}`, 'danger');
+      await loadAll();
+    } else {
+      const order = state.orders.find(o => o.id === id);
+      if (order) order.status = status;
+      saveLocalAll();
+    }
     renderEmployee();
     toast(`Pedido marcado como ${status}.`, 'success');
   }
@@ -596,6 +1160,32 @@ const Omega = (() => {
     btn.querySelector('i').className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
   }
 
+
+  function toggleSharkMessage() {
+    const shark = document.getElementById('sharkMascot');
+    const bubble = document.getElementById('sharkBubble');
+    if (!shark || !bubble) return;
+    const user = currentUser();
+    const tips = [
+      'Recuerda revisar la cantidad antes de pagar.',
+      'Puedes explorar las figuras en el apartado 3D.',
+      user ? `¡Hola ${user.name.split(' ')[0]}! Tu rol actual es ${user.role}.` : 'Inicia sesión para guardar tus compras.',
+      'Omega Shark vigila que el carrito esté listo.'
+    ];
+    bubble.textContent = tips[Math.floor(Math.random() * tips.length)];
+    shark.classList.toggle('show-message');
+    if (shark.classList.contains('show-message')) setTimeout(() => shark.classList.remove('show-message'), 4200);
+  }
+
+  function sharkSay(message) {
+    const shark = document.getElementById('sharkMascot');
+    const bubble = document.getElementById('sharkBubble');
+    if (!shark || !bubble) return;
+    bubble.textContent = message;
+    shark.classList.add('show-message');
+    setTimeout(() => shark.classList.remove('show-message'), 3600);
+  }
+
   function empty(text) { return `<div class="empty-state">${esc(text)}</div>`; }
 
   function applyTheme() {
@@ -605,47 +1195,54 @@ const Omega = (() => {
   }
 
   async function renderAll() {
-    if (!db) { renderDbWarning(); return; }
-    updateNav(); renderHome(); renderProducts(); renderCart();
+    updateNav();
+    renderHome(); renderProducts(); renderCart(); render3DExperience();
   }
 
   async function refreshData() {
     await loadAll(true);
     await renderAll();
-    const route = window.location.hash.replace('#', '') || 'inicio';
+    const rawRoute = window.location.hash.replace('#', '') || 'inicio';
+    const route = rawRoute.startsWith('page-') ? rawRoute.slice(5) : rawRoute;
     await renderRoute(route);
   }
 
   function initEvents() {
     ['searchInput','genreFilter','categoryFilter','minPrice','maxPrice','sortFilter'].forEach(id => document.getElementById(id)?.addEventListener('input', renderProducts));
-    document.getElementById('loginForm').addEventListener('submit', async e => { e.preventDefault(); await login(document.getElementById('loginEmail').value, document.getElementById('loginPassword').value); });
-    document.getElementById('registerForm').addEventListener('submit', async e => { e.preventDefault(); await register(); });
-    document.getElementById('employeeForm').addEventListener('submit', async e => { e.preventDefault(); await createEmployee(); });
-    document.getElementById('productForm').addEventListener('submit', async e => { e.preventDefault(); await saveProduct(); });
-    document.getElementById('themeToggle').addEventListener('click', () => { localStorage.setItem(LS.theme, document.body.classList.contains('light-mode') ? 'dark' : 'light'); applyTheme(); if (adminChart) renderChart(); });
-    document.getElementById('adminMetric').addEventListener('change', renderChart);
-    document.getElementById('adminPeriod').addEventListener('change', renderChart);
+    document.getElementById('loginForm')?.addEventListener('submit', async e => { e.preventDefault(); await login(document.getElementById('loginEmail').value, document.getElementById('loginPassword').value); });
+    document.getElementById('registerForm')?.addEventListener('submit', async e => { e.preventDefault(); await register(); });
+    ['regName','regEmail','regPhone','regBirth','regCity','regCountry','regAddress','regPassword','regConfirm'].forEach(id => document.getElementById(id)?.addEventListener('input', e => e.target.classList.remove('is-invalid')));
+    document.getElementById('employeeForm')?.addEventListener('submit', async e => { e.preventDefault(); await createEmployee(); });
+    document.getElementById('productForm')?.addEventListener('submit', async e => { e.preventDefault(); await saveProduct(); });
+    document.getElementById('checkoutForm')?.addEventListener('submit', async e => { e.preventDefault(); await checkout(); });
+    document.querySelectorAll('input[name="paymentMethod"]').forEach(input => input.addEventListener('change', togglePaymentFields));
+    document.getElementById('cardNumber')?.addEventListener('input', e => { e.target.value = formatCardNumber(e.target.value); updateCardPreview(); setInvalid(e.target, onlyDigits(e.target.value).length >= 13 && !validLuhn(e.target.value)); });
+    document.getElementById('cardExpiry')?.addEventListener('input', e => { e.target.value = formatExpiry(e.target.value); setInvalid(e.target, e.target.value.length === 5 && !validExpiry(e.target.value)); });
+    document.getElementById('cardCvv')?.addEventListener('input', e => { e.target.value = onlyDigits(e.target.value).slice(0, 4); const brand = detectCardBrand(document.getElementById('cardNumber')?.value || ''); const len = brand === 'AMEX' ? 4 : 3; setInvalid(e.target, e.target.value.length > 0 && (e.target.value.length !== len || /^0+$/.test(e.target.value))); });
+    document.getElementById('cardName')?.addEventListener('input', e => { updateCardPreview(); setInvalid(e.target, e.target.value.trim().length > 0 && !validFullName(e.target.value)); });
+    document.getElementById('payerBirth')?.addEventListener('change', e => setInvalid(e.target, e.target.value && !isValidAge(e.target.value, 18, 100)));
+    document.getElementById('payerId')?.addEventListener('input', e => { e.target.value = onlyDigits(e.target.value).slice(0, 15); setInvalid(e.target, !validOptionalId(e.target.value)); });
+    document.getElementById('themeToggle')?.addEventListener('click', () => { localStorage.setItem(LS.theme, document.body.classList.contains('light-mode') ? 'dark' : 'light'); applyTheme(); if (adminChart) renderChart(); });
+    document.getElementById('adminMetric')?.addEventListener('change', renderChart);
+    document.getElementById('adminPeriod')?.addEventListener('change', renderChart);
     document.querySelectorAll('[data-route]').forEach(el => el.addEventListener('click', e => { const route = el.dataset.route; if (route) { e.preventDefault(); navigate(route); } }));
     document.querySelectorAll('[data-order-filter]').forEach(btn => btn.addEventListener('click', () => { document.querySelectorAll('[data-order-filter]').forEach(b => b.classList.remove('active')); btn.classList.add('active'); currentOrderFilter = btn.dataset.orderFilter; renderMyOrders(); }));
-    document.getElementById('languageSelect').value = localStorage.getItem(LS.lang) || 'es';
-    document.getElementById('languageSelect').addEventListener('change', e => { localStorage.setItem(LS.lang, e.target.value); toast(e.target.value === 'en' ? 'Language saved.' : 'Idioma guardado.', 'success'); });
+    if (document.getElementById('languageSelect')) document.getElementById('languageSelect').value = localStorage.getItem(LS.lang) || 'es';
+    document.getElementById('languageSelect')?.addEventListener('change', e => { localStorage.setItem(LS.lang, e.target.value); toast(e.target.value === 'en' ? 'Language saved.' : 'Idioma guardado.', 'success'); });
   }
 
   async function init() {
     applyTheme();
     initEvents();
-    if (!db) {
-      renderDbWarning();
-      toast('Configura Supabase para activar la base de datos SQL.', 'danger');
-    } else {
-      await loadAll();
-      await renderAll();
-    }
-    const initial = window.location.hash.replace('#', '') || 'inicio';
+    updateNav();
+    await loadAll();
+    await renderAll();
+    const initialRaw = window.location.hash.replace('#', '') || 'inicio';
+    const initial = initialRaw.startsWith('page-') ? initialRaw.slice(5) : initialRaw;
     await navigate(initial);
   }
 
-  return { init, navigate, openAuthOrLogout, clearFilters, changeQty, addToCart, updateCartQty, removeCart, checkout, openProduct, quickAdd, fillLogin, togglePassword, showEmployeeModal, editProduct, clearProductForm, toggleProduct, setOrderStatus, refreshData };
+  return { init, navigate, openAuthOrLogout, clearFilters, changeQty, addToCart, updateCartQty, removeCart, openCheckout, checkout, openProduct, quickAdd, fillLogin, togglePassword, showEmployeeModal, editProduct, clearProductForm, toggleProduct, setOrderStatus, refreshData, render3DExperience, select3DProduct, move3DViewer, reset3DViewer, triggerSpring3D, toggleSharkMessage };
 })();
 
 document.addEventListener('DOMContentLoaded', Omega.init);

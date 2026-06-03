@@ -68,7 +68,16 @@ CREATE TABLE public.orders (
     user_id TEXT NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     status VARCHAR(20) NOT NULL CHECK (status IN ('PENDIENTE', 'APROBADA', 'RECHAZADA', 'ENVIADA')),
-    total NUMERIC(10,2) NOT NULL CHECK (total >= 0)
+    total NUMERIC(10,2) NOT NULL CHECK (total >= 0),
+    customer_name VARCHAR(160),
+    shipping_phone VARCHAR(40),
+    shipping_address TEXT,
+    shipping_city VARCHAR(100),
+    shipping_country VARCHAR(100),
+    shipping_notes TEXT,
+    payment_method VARCHAR(30) DEFAULT 'CARD',
+    payment_brand VARCHAR(40),
+    payment_last4 VARCHAR(4)
 );
 
 -- =========================================================
@@ -342,9 +351,13 @@ INSERT INTO public.products (
 -- Compras iniciales
 -- =========================================================
 
-INSERT INTO public.orders (id, user_id, created_at, status, total) VALUES
-('o1', 'u_cli', '2026-05-04 11:20:00+00', 'PENDIENTE', 54.99),
-('o2', 'u_cli', '2026-05-05 15:45:00+00', 'APROBADA', 49.98);
+INSERT INTO public.orders (
+    id, user_id, created_at, status, total,
+    customer_name, shipping_phone, shipping_address, shipping_city, shipping_country,
+    shipping_notes, payment_method, payment_brand, payment_last4
+) VALUES
+('o1', 'u_cli', '2026-05-04 11:20:00+00', 'PENDIENTE', 54.99, 'Cliente Omega', '+593000000002', 'Dirección principal', 'Quito', 'Ecuador', 'Pedido inicial de prueba', 'CARD', 'VISA', '4242'),
+('o2', 'u_cli', '2026-05-05 15:45:00+00', 'APROBADA', 49.98, 'Cliente Omega', '+593000000002', 'Dirección principal', 'Quito', 'Ecuador', 'Compra aprobada inicial', 'TRANSFER', 'TRANSFERENCIA', NULL);
 
 INSERT INTO public.order_items (
     order_id, product_id, name, price, quantity, image

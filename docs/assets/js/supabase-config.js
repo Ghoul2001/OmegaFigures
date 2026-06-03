@@ -10,5 +10,5 @@
 */
 window.OMEGA_SUPABASE = {
   url: 'https://kuyhnojikbovwxoidtzc.supabase.co',
-  anonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1eWhub2ppa2Jvdnd4b2lkdHpjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDk1NzMsImV4cCI6MjA5NDA4NTU3M30.1LzvGZqC-wzP25w0BJviSMUCHJm1w1Ns0ZDrjrEPocc'
+  anonKey: 'sb_publishable_blQSH6wcpKRFgQb6TUwztg_O3oFlN4H'
 };
