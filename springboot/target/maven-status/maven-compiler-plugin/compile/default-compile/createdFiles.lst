@@ -1,0 +1,9 @@
+com\omegafigures\springboot\service\UsuarioService.class
+com\omegafigures\springboot\controller\HomeController.class
+com\omegafigures\springboot\controller\InformacionController.class
+com\omegafigures\springboot\model\Usuario.class
+com\omegafigures\springboot\controller\UsuarioController.class
+com\omegafigures\springboot\config\CorsConfig.class
+com\omegafigures\springboot\controller\SaludoRestController.class
+com\omegafigures\springboot\SpringbootApplication.class
+com\omegafigures\springboot\controller\UsuarioRestController.class

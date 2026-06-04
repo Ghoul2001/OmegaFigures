@@ -152,6 +152,469 @@ img { max-width: 100%; display: block; }
 .summary-line, .summary-total { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
 .summary-total { border-bottom: none; font-size: 1.35rem; }
 
+.viewer3d-section {
+  padding: 0;
+  min-height: calc(100vh - 86px);
+  background:
+    radial-gradient(circle at 18% 22%, rgba(66,216,255,.18), transparent 24%),
+    radial-gradient(circle at 82% 64%, rgba(224,68,170,.18), transparent 30%),
+    linear-gradient(135deg, #08111f, var(--bg));
+}
+.viewer3d-stage {
+  position: relative;
+  min-height: calc(100vh - 86px);
+  overflow: hidden;
+  isolation: isolate;
+}
+.viewer3d-stage::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+  background-size: 58px 58px;
+  mask-image: radial-gradient(circle at center, black 0%, transparent 74%);
+}
+#figure3dCanvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+}
+.viewer3d-topbar {
+  position: absolute;
+  top: 24px;
+  left: 24px;
+  right: 24px;
+  z-index: 3;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  pointer-events: none;
+}
+.viewer3d-heading,
+.viewer3d-controls,
+.viewer3d-swatchbar,
+.viewer3d-status {
+  pointer-events: auto;
+  background: rgba(13, 19, 32, .72);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+}
+.light-mode .viewer3d-heading,
+.light-mode .viewer3d-controls,
+.light-mode .viewer3d-swatchbar,
+.light-mode .viewer3d-status { background: rgba(255,255,255,.78); }
+.viewer3d-heading {
+  max-width: min(440px, 100%);
+  border-radius: 24px;
+  padding: 16px 18px;
+}
+.viewer3d-heading h2 {
+  margin: 10px 0 0;
+  font-size: 2rem;
+  line-height: 1;
+  font-weight: 950;
+}
+.viewer3d-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 58px;
+  padding: 8px;
+  border-radius: 999px;
+}
+.viewer3d-icon-btn {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  color: var(--text);
+  background: rgba(255,255,255,.06);
+}
+.viewer3d-icon-btn:hover,
+.viewer3d-icon-btn.active {
+  color: white;
+  background: linear-gradient(120deg, var(--primary), var(--secondary));
+}
+.viewer3d-zoom {
+  width: 148px;
+  min-height: 42px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  padding: 0 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  background: rgba(255,255,255,.06);
+}
+.viewer3d-zoom input {
+  width: 100%;
+  accent-color: var(--secondary);
+}
+.viewer3d-swatchbar {
+  position: absolute;
+  left: 24px;
+  bottom: 112px;
+  z-index: 3;
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border-radius: 999px;
+}
+.viewer3d-swatch {
+  width: 42px;
+  height: 42px;
+  border: 2px solid rgba(255,255,255,.2);
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--swatch-one), var(--swatch-two));
+}
+.viewer3d-swatch.active {
+  outline: 3px solid rgba(255,255,255,.52);
+  outline-offset: 3px;
+}
+.viewer3d-status {
+  position: absolute;
+  right: 24px;
+  bottom: 24px;
+  z-index: 3;
+  max-width: min(360px, calc(100vw - 48px));
+  padding: 12px 14px;
+  border-radius: 18px;
+  color: var(--muted);
+  font-weight: 800;
+}
+.viewer3d-status.is-hidden { display: none; }
+
+.spring-section {
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.02), transparent 34%),
+    var(--bg);
+  overflow-x: hidden;
+}
+.spring-lab {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  background: linear-gradient(135deg, rgba(46, 213, 115, .08), rgba(124, 58, 237, .12)), var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: var(--shadow);
+}
+.spring-lab-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  gap: 18px;
+  align-items: end;
+}
+.spring-lab-header h3 {
+  margin: 4px 0 8px;
+  color: var(--text);
+  font-size: 1.55rem;
+  font-weight: 950;
+}
+.spring-lab-header p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.55;
+}
+.spring-server-box label {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--muted);
+  font-size: .86rem;
+  font-weight: 800;
+}
+.spring-action-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+.spring-action-btn {
+  min-width: 0;
+  min-height: 122px;
+  display: grid;
+  align-content: center;
+  gap: 7px;
+  padding: 16px;
+  color: var(--text);
+  text-align: left;
+  background: rgba(255,255,255,.055);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  transition: transform .18s ease, border-color .18s ease, background .18s ease;
+}
+.spring-action-btn:hover {
+  transform: translateY(-2px);
+  background: rgba(255,255,255,.085);
+  border-color: rgba(46, 213, 115, .42);
+}
+.spring-action-btn i {
+  color: #86efac;
+  font-size: 1.35rem;
+}
+.spring-action-btn span {
+  font-weight: 900;
+  line-height: 1.2;
+}
+.spring-action-btn small {
+  color: var(--muted);
+  font-weight: 750;
+}
+.spring-run-box {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 13px 14px;
+  color: var(--text);
+  background: rgba(255,255,255,.045);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+}
+.spring-run-box strong {
+  display: block;
+  margin-bottom: 3px;
+}
+.spring-run-box code,
+.spring-result-panel code {
+  color: #d1fae5;
+}
+.spring-result-panel {
+  overflow: hidden;
+  background: #070b14;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 14px;
+}
+.spring-result-top {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  color: var(--text);
+  border-bottom: 1px solid rgba(255,255,255,.09);
+}
+.spring-result-top span {
+  color: var(--muted);
+  font-size: .9rem;
+  font-weight: 800;
+}
+.spring-result-panel pre {
+  min-height: 180px;
+  max-height: 360px;
+  margin: 0;
+  padding: 16px;
+  overflow: auto;
+  font-size: .9rem;
+  line-height: 1.5;
+}
+.spring-report {
+  display: grid;
+  gap: 22px;
+  min-width: 0;
+}
+.spring-report-item {
+  display: grid;
+  grid-template-columns: minmax(0, .92fr) minmax(360px, 1.08fr);
+  gap: 24px;
+  align-items: start;
+  padding: 24px;
+  color: #111827;
+  background: #ffffff;
+  border: 1px solid rgba(17,24,39,.12);
+  border-radius: 8px;
+  box-shadow: 0 22px 54px rgba(0,0,0,.18);
+  min-width: 0;
+  overflow: hidden;
+}
+.spring-section .section-heading h2,
+.spring-copy h3 { overflow-wrap: anywhere; }
+.spring-copy,
+.spring-figure { min-width: 0; }
+.spring-copy h3 {
+  margin: 0 0 10px;
+  color: #253c9e;
+  font-size: 1.32rem;
+  line-height: 1.2;
+  font-weight: 900;
+}
+.spring-heading-break { display: inline; }
+.spring-caption-break { display: none; }
+.spring-copy p {
+  margin: 0;
+  color: #050505;
+  font-size: 1.02rem;
+  line-height: 1.45;
+}
+.spring-copy h3,
+.spring-copy p {
+  max-width: 100%;
+  white-space: normal;
+}
+.spring-figure {
+  margin: 0;
+}
+.spring-ide-shot,
+.spring-browser-shot,
+.spring-tabs,
+.spring-ide-body { min-width: 0; }
+.spring-figure figcaption {
+  margin-top: 8px;
+  color: #374151;
+  font-size: .92rem;
+  font-style: italic;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+.spring-window-bar,
+.spring-browser-bar {
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  color: #dbeafe;
+  background: #070b14;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+  font-size: .78rem;
+}
+.spring-window-bar span {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #ef4444;
+}
+.spring-window-bar span:nth-child(2) { background: #f59e0b; }
+.spring-window-bar span:nth-child(3) { background: #22c55e; }
+.spring-window-bar strong {
+  margin-left: 6px;
+  color: #e5e7eb;
+  font-weight: 800;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.spring-ide-shot,
+.spring-browser-shot {
+  overflow: hidden;
+  border-radius: 4px;
+  border: 1px solid #111827;
+  background: #0b1020;
+  max-width: 100%;
+}
+.spring-ide-body {
+  min-height: 285px;
+  display: grid;
+  grid-template-columns: 150px 1fr;
+}
+.spring-ide-body aside {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 14px;
+  color: #9ca3af;
+  background: #0f172a;
+  border-right: 1px solid rgba(255,255,255,.08);
+  font-size: .82rem;
+}
+.spring-ide-body aside strong { color: #f8fafc; }
+.spring-ide-body main {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  min-width: 0;
+}
+.spring-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 8px;
+  color: #c4b5fd;
+  background: #111827;
+  font-size: .75rem;
+  max-width: 100%;
+  overflow-x: auto;
+}
+.spring-tabs span {
+  flex: 0 0 auto;
+  max-width: min(220px, 54vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 5px 8px;
+  border-radius: 8px;
+  background: rgba(104,77,255,.18);
+}
+.spring-ide-shot pre,
+.spring-json-shot pre {
+  margin: 0;
+  padding: 16px;
+  color: #d1fae5;
+  background: #070b14;
+  font-size: .86rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  overflow-x: auto;
+}
+.spring-console {
+  padding: 12px 16px;
+  color: #86efac;
+  background: #030712;
+  border-top: 1px solid rgba(255,255,255,.08);
+  font-family: Consolas, "Courier New", monospace;
+  font-size: .78rem;
+}
+.spring-browser-shot {
+  background: #0b0f19;
+}
+.spring-page-shot {
+  min-height: 250px;
+}
+.spring-page-shot.compact,
+.spring-json-shot.compact {
+  min-height: 170px;
+}
+.spring-web-page {
+  min-height: 218px;
+  padding: 18px;
+  color: #111827;
+  background: #ffffff;
+}
+.spring-web-page h4 {
+  margin: 0 0 12px;
+  color: #111827;
+  font-size: 1.42rem;
+  font-weight: 850;
+}
+.spring-web-page div {
+  padding: 8px 10px;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  font-size: .92rem;
+}
+.spring-web-page strong,
+.spring-web-page span {
+  display: block;
+  margin-bottom: 10px;
+}
+.spring-json-shot {
+  min-height: 250px;
+}
+.spring-json-shot .spring-browser-bar {
+  color: #d1d5db;
+}
+
 .password-box { position: relative; }
 .password-box input { padding-right: 52px; }
 .password-toggle { position: absolute; right: 5px; top: 5px; height: 36px; width: 42px; border-radius: 12px; color: var(--text); background: rgba(255,255,255,.06); border: 1px solid var(--border); }
@@ -193,10 +656,75 @@ img { max-width: 100%; display: block; }
 .site-footer { border-top: 1px solid var(--border); padding: 34px 0; background: rgba(0,0,0,.16); color: var(--muted); }
 .site-footer h5 { color: var(--text); font-weight: 950; }
 
+.mascot-dock {
+  position: fixed;
+  left: 18px;
+  bottom: 18px;
+  z-index: 1070;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: min(330px, calc(100vw - 36px));
+  padding: 12px 14px 12px 12px;
+  color: var(--text);
+  background: rgba(15, 19, 32, .84);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(16px);
+}
+.light-mode .mascot-dock { background: rgba(255,255,255,.88); }
+.mascot-avatar {
+  flex: 0 0 auto;
+  width: 70px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  border-radius: 20px;
+  background: linear-gradient(145deg, rgba(116,230,255,.18), rgba(224,68,170,.16));
+  border: 1px solid rgba(255,255,255,.12);
+  overflow: hidden;
+}
+.mascot-avatar img {
+  width: 78px;
+  height: 62px;
+  object-fit: contain;
+  animation: mascotFloat 3.2s ease-in-out infinite;
+}
+.mascot-copy { min-width: 0; }
+.mascot-copy strong { display: block; font-weight: 950; line-height: 1.1; }
+.mascot-copy span { display: block; color: var(--muted); font-size: .88rem; line-height: 1.25; }
+.mascot-inline {
+  display: inline-grid;
+  place-items: center;
+  width: 48px;
+  height: 42px;
+  margin-bottom: 10px;
+  border-radius: 16px;
+  background: rgba(104,77,255,.14);
+  border: 1px solid var(--border);
+}
+.mascot-inline img { width: 58px; height: 46px; object-fit: contain; }
+.omega-toast {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+.omega-toast .toast-mascot {
+  width: 42px;
+  height: 36px;
+  object-fit: contain;
+}
+@keyframes mascotFloat {
+  0%, 100% { transform: translateY(0) rotate(-3deg); }
+  50% { transform: translateY(-5px) rotate(2deg); }
+}
+
 .omega-modal { background: var(--panel-strong); color: var(--text); border: 1px solid var(--border); border-radius: 30px; box-shadow: var(--shadow); }
 .modal-product-img { width: 100%; max-height: 520px; object-fit: contain; background: rgba(255,255,255,.04); border-radius: 24px; padding: 20px; }
 .toast-area { position: fixed; right: 18px; bottom: 18px; z-index: 1080; display: grid; gap: 10px; max-width: min(380px, calc(100vw - 36px)); }
-.omega-toast { background: var(--panel-strong); border: 1px solid var(--border); border-left: 5px solid var(--primary); color: var(--text); border-radius: 18px; padding: 14px 16px; box-shadow: var(--shadow); animation: toastIn .25s ease; }
+.omega-toast { background: var(--panel-strong); border: 1px solid var(--border); border-left: 5px solid var(--primary); color: var(--text); border-radius: 18px; padding: 12px 14px; box-shadow: var(--shadow); animation: toastIn .25s ease; }
 .omega-toast.success { border-left-color: var(--success); }
 .omega-toast.danger { border-left-color: var(--danger); }
 @keyframes toastIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
@@ -209,15 +737,115 @@ img { max-width: 100%; display: block; }
 @media (max-width: 991.98px) {
   .main-content { padding-top: 76px; }
   .hero-section { min-height: auto; padding: 46px 0; }
+  .viewer3d-section,
+  .viewer3d-stage { min-height: calc(100vh - 76px); }
+  .viewer3d-topbar {
+    top: 14px;
+    left: 14px;
+    right: 14px;
+    flex-direction: column;
+  }
+  .viewer3d-heading h2 { font-size: 1.5rem; }
+  .viewer3d-controls {
+    max-width: 100%;
+    flex-wrap: wrap;
+    border-radius: 24px;
+  }
+  .viewer3d-swatchbar { left: 14px; bottom: 96px; }
+  .viewer3d-status { right: 14px; bottom: 14px; }
+  .spring-report-item {
+    grid-template-columns: 1fr;
+  }
+  .spring-lab-header {
+    grid-template-columns: 1fr;
+  }
+  .spring-action-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
   .floating-card { display: none; }
   .cart-item { grid-template-columns: 86px 1fr; }
   .cart-item .cart-actions { grid-column: 1 / -1; }
 }
 @media (max-width: 575.98px) {
+  .mascot-dock {
+    left: 12px;
+    bottom: 12px;
+    width: calc(100vw - 24px);
+    padding: 9px 11px;
+    border-radius: 20px;
+  }
+  .mascot-avatar { width: 54px; height: 46px; border-radius: 16px; }
+  .mascot-avatar img { width: 62px; height: 50px; }
+  .mascot-copy strong { font-size: .95rem; }
+  .mascot-copy span { font-size: .78rem; }
+  .toast-area { left: 12px; right: 12px; bottom: 92px; max-width: none; }
+  .viewer3d-topbar { gap: 10px; }
+  .viewer3d-heading { padding: 12px; border-radius: 18px; }
+  .viewer3d-heading h2 { font-size: 1.15rem; }
+  .viewer3d-controls { gap: 6px; padding: 7px; }
+  .viewer3d-icon-btn,
+  .viewer3d-swatch { width: 38px; height: 38px; }
+  .viewer3d-zoom { width: 132px; min-height: 38px; }
+  .viewer3d-swatchbar { bottom: 86px; }
+  .viewer3d-status { display: none; }
+  .spring-report-item {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    padding: 16px;
+    border-radius: 8px;
+  }
+  .spring-section .container {
+    width: 100%;
+    max-width: 100%;
+    padding-left: 12px;
+    padding-right: 12px;
+    overflow-x: hidden;
+  }
+  .spring-copy,
+  .spring-figure,
+  .spring-ide-shot,
+  .spring-browser-shot,
+  .spring-figure figcaption {
+    width: calc(100vw - 56px);
+    max-width: calc(100vw - 56px);
+  }
+  .spring-figure { margin-top: 16px; }
+  .spring-section .section-heading h2 {
+    font-size: 1.72rem;
+    line-height: 1.08;
+  }
+  .spring-section .section-heading p { font-size: .95rem; }
+  .spring-lab { padding: 16px; border-radius: 14px; }
+  .spring-lab-header h3 { font-size: 1.18rem; }
+  .spring-action-grid { grid-template-columns: 1fr; }
+  .spring-action-btn { min-height: 92px; }
+  .spring-run-box {
+    align-items: stretch;
+    flex-direction: column;
+  }
+  .spring-result-top {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+  .spring-result-panel pre { font-size: .76rem; }
+  .spring-copy h3 { font-size: 1.08rem; }
+  .spring-heading-break { display: block; }
+  .spring-caption-break { display: block; }
+  .spring-copy p { font-size: .94rem; }
+  .spring-ide-body { grid-template-columns: 1fr; min-height: auto; }
+  .spring-ide-body aside { display: none; }
+  .spring-tabs { overflow-x: auto; }
+  .spring-browser-bar { font-size: .68rem; }
+  .spring-ide-shot pre,
+  .spring-json-shot pre { font-size: .74rem; }
   .hero-mini-stats { grid-template-columns: 1fr; }
   .product-image-wrap { min-height: 230px; }
   .product-image-wrap img { height: 210px; }
   .cart-item { grid-template-columns: 1fr; }
   .cart-item img { width: 100%; height: 180px; }
   .search-panel, .auth-card, .summary-card, .data-card, .chart-card, .policy-card { padding: 18px; border-radius: 22px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mascot-avatar img { animation: none; }
 }

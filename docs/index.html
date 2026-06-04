@@ -27,6 +27,8 @@
           <ul class="navbar-nav mx-auto mb-2 mb-xl-0 gap-xl-1">
             <li class="nav-item"><a class="nav-link" href="#page-inicio" data-route="inicio"><i class="bi bi-house-door me-1"></i>Inicio</a></li>
             <li class="nav-item"><a class="nav-link" href="#page-productos" data-route="productos"><i class="bi bi-grid me-1"></i>Productos</a></li>
+            <li class="nav-item"><a class="nav-link" href="#page-visor-3d" data-route="visor-3d"><i class="bi bi-cube me-1"></i>3D</a></li>
+            <li class="nav-item"><a class="nav-link" href="#page-spring" data-route="spring"><i class="bi bi-braces me-1"></i>Spring</a></li>
             <li class="nav-item nav-client"><a class="nav-link" href="#page-mis-compras" data-route="mis-compras"><i class="bi bi-bag-check me-1"></i>Mis compras</a></li>
             <li class="nav-item nav-admin"><a class="nav-link" href="#page-admin" data-route="admin"><i class="bi bi-bar-chart-line me-1"></i>Admin</a></li>
             <li class="nav-item nav-employee"><a class="nav-link" href="#page-empleado" data-route="empleado"><i class="bi bi-tools me-1"></i>Empleado</a></li>
@@ -69,6 +71,7 @@
                 <div class="d-flex flex-wrap gap-3 mt-4">
                   <button class="btn btn-gradient btn-lg" type="button" onclick="Omega.navigate('productos')"><i class="bi bi-shop me-2"></i>Ver productos</button>
                   <button class="btn btn-outline-light btn-lg" type="button" onclick="Omega.navigate('login')"><i class="bi bi-box-arrow-in-right me-2"></i>Iniciar sesión</button>
+                  <button class="btn btn-outline-light btn-lg" type="button" onclick="Omega.navigate('spring')"><i class="bi bi-braces me-2"></i>Probar Spring</button>
                 </div>
                 <div class="hero-mini-stats mt-4">
                   <div><strong id="heroProductsCount">0</strong><span>Productos</span></div>
@@ -78,7 +81,7 @@
               </div>
               <div class="col-lg-6">
                 <div class="hero-showcase">
-                  <img src="assets/img/omega-hero.svg" alt="OmegaFiguresWeb figuras" class="img-fluid hero-image" />
+                  <img src="assets/img/omega-hero-collection.webp" alt="Tienda de figuras de colección OmegaFiguresWeb con tiburón mascota" class="img-fluid hero-image" />
                   <div class="floating-card fc-one"><i class="bi bi-star-fill"></i> Premium figures</div>
                   <div class="floating-card fc-two"><i class="bi bi-shield-check"></i> Roles seguros</div>
                 </div>
@@ -177,6 +180,37 @@
         </div>
       </section>
 
+      <section id="page-visor-3d" class="page-section viewer3d-section">
+        <div id="viewer3dStage" class="viewer3d-stage">
+          <canvas id="figure3dCanvas" aria-label="Visor 3D de figura de colección"></canvas>
+
+          <div class="viewer3d-topbar">
+            <div class="viewer3d-heading">
+              <span class="eyebrow">Visor 3D</span>
+              <h2>Figura Omega 3D</h2>
+            </div>
+            <div class="viewer3d-controls" aria-label="Controles 3D">
+              <button class="viewer3d-icon-btn" type="button" data-viewer-action="rotate-left" title="Girar izquierda" aria-label="Girar izquierda"><i class="bi bi-arrow-counterclockwise"></i></button>
+              <button class="viewer3d-icon-btn" type="button" data-viewer-action="rotate-right" title="Girar derecha" aria-label="Girar derecha"><i class="bi bi-arrow-clockwise"></i></button>
+              <button class="viewer3d-icon-btn active" type="button" data-viewer-action="auto" title="Rotación automática" aria-label="Rotación automática"><i class="bi bi-play-circle"></i></button>
+              <button class="viewer3d-icon-btn" type="button" data-viewer-action="reset" title="Restablecer vista" aria-label="Restablecer vista"><i class="bi bi-arrow-repeat"></i></button>
+              <label class="viewer3d-zoom" for="viewer3dZoom">
+                <i class="bi bi-zoom-in"></i>
+                <input id="viewer3dZoom" type="range" min="34" max="76" value="52" aria-label="Zoom 3D" />
+              </label>
+            </div>
+          </div>
+
+          <div class="viewer3d-swatchbar" aria-label="Variantes de color">
+            <button class="viewer3d-swatch active" type="button" data-palette="omega" style="--swatch-one:#42d8ff;--swatch-two:#e044aa;" title="Color Omega" aria-label="Color Omega"></button>
+            <button class="viewer3d-swatch" type="button" data-palette="shadow" style="--swatch-one:#9ca3af;--swatch-two:#1f2937;" title="Color sombra" aria-label="Color sombra"></button>
+            <button class="viewer3d-swatch" type="button" data-palette="solar" style="--swatch-one:#fbbf24;--swatch-two:#ef4444;" title="Color solar" aria-label="Color solar"></button>
+          </div>
+
+          <div id="viewer3dStatus" class="viewer3d-status" role="status">Cargando visor 3D</div>
+        </div>
+      </section>
+
       <section id="page-login" class="page-section">
         <div class="container py-5">
           <div class="row g-4 justify-content-center">
@@ -243,6 +277,68 @@
                   </div>
                 </form>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="page-spring" class="page-section spring-section">
+        <div class="container py-5">
+          <div class="spring-lab">
+            <div class="spring-lab-header">
+              <div>
+                <span class="eyebrow">Laboratorio Spring</span>
+                <h3>Ejecuta y prueba los endpoints</h3>
+                <p>Primero inicia el proyecto Spring Boot en IntelliJ o con Maven. Luego usa estos botones para abrir las vistas MVC o consultar los Rest Controllers.</p>
+              </div>
+              <div class="spring-server-box">
+                <label for="springBaseUrl">Servidor Spring</label>
+                <input id="springBaseUrl" class="form-control" value="http://localhost:8080" aria-label="Servidor Spring Boot" />
+              </div>
+            </div>
+
+            <div class="spring-action-grid">
+              <button class="spring-action-btn" type="button" data-spring-open="/gestionUsuarios">
+                <i class="bi bi-window-sidebar"></i>
+                <span>Abrir vista usuarios</span>
+                <small>Controller MVC</small>
+              </button>
+              <button class="spring-action-btn" type="button" data-spring-open="/informacion">
+                <i class="bi bi-display"></i>
+                <span>Abrir datos servidor</span>
+                <small>Controller + Model</small>
+              </button>
+              <button class="spring-action-btn" type="button" data-spring-test="/api/v1/usuarios">
+                <i class="bi bi-filetype-json"></i>
+                <span>Probar JSON usuarios</span>
+                <small>Rest Controller</small>
+              </button>
+              <button class="spring-action-btn" type="button" data-spring-test="/api/saludo">
+                <i class="bi bi-chat-square-text"></i>
+                <span>Probar saludo JSON</span>
+                <small>Rest Controller</small>
+              </button>
+            </div>
+
+            <div class="spring-run-box">
+              <div>
+                <strong>Comando para iniciar</strong>
+                <code>.\run-springboot.bat</code>
+                <small>Ejecutalo desde la carpeta <code>springboot</code>.</small>
+              </div>
+              <button class="btn btn-sm btn-outline-light" type="button" data-spring-copy=".\run-springboot.bat">
+                <i class="bi bi-clipboard me-1"></i>Copiar comando
+              </button>
+            </div>
+
+            <div class="spring-result-panel">
+              <div class="spring-result-top">
+                <strong>Resultado REST</strong>
+                <span id="springStatus">Esperando una acción.</span>
+              </div>
+              <pre id="springResult"><code>{
+  "estado": "Listo para probar /api/v1/usuarios o /api/saludo"
+}</code></pre>
             </div>
           </div>
         </div>
@@ -401,6 +497,16 @@
     </footer>
   </div>
 
+  <aside class="mascot-dock" aria-label="Mascota tiburón de OmegaFiguresWeb">
+    <div class="mascot-avatar" aria-hidden="true">
+      <img src="assets/img/omega-shark.svg" alt="" />
+    </div>
+    <div class="mascot-copy">
+      <strong>Tiburón Omega</strong>
+      <span id="mascotStatus">Listo para guiarte.</span>
+    </div>
+  </aside>
+
   <div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-xl">
       <div class="modal-content omega-modal">
@@ -438,5 +544,14 @@
   <script src="assets/js/supabase-config.js"></script>
   <script src="assets/js/app.js"></script>
   <script src="assets/js/i18n.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="assets/js/viewer3d.js"></script>
 </body>
 </html>

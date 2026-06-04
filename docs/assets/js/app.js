@@ -34,6 +34,35 @@ const Omega = (() => {
     try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
   };
   const setLocal = (key, value) => localStorage.setItem(key, JSON.stringify(value));
+  const translateText = (text) => window.OmegaI18n?.translate(text) || text;
+  const translateKey = (key, params, fallback) => window.OmegaI18n?.t(key, params) || fallback;
+  const translateList = (key, fallback) => window.OmegaI18n?.list(key) || fallback;
+  const applyLanguage = () => window.OmegaI18n?.apply();
+  const mascotImage = 'assets/img/omega-shark.svg';
+  const mascotInline = () => `<span class="mascot-inline" aria-hidden="true"><img src="${mascotImage}" alt=""></span>`;
+
+  function setMascotStatus(text) {
+    const el = document.getElementById('mascotStatus');
+    if (!el) return;
+    el.textContent = text;
+    applyLanguage();
+  }
+
+  function mascotStatusForRoute(route) {
+    return {
+      inicio: 'Mostrando el inicio.',
+      productos: 'Explorando productos.',
+      carrito: 'Cuidando tu carrito.',
+      'visor-3d': 'Visualizando la figura 3D.',
+      spring: 'Probando Spring Boot.',
+      login: 'Protegiendo tu acceso.',
+      'mis-compras': 'Revisando tus compras.',
+      admin: 'Analizando estadísticas.',
+      empleado: 'Gestionando la tienda.',
+      contacto: 'Abriendo redes sociales.',
+      404: 'Buscando la sección correcta.'
+    }[route] || 'Listo para guiarte.';
+  }
 
   async function hashText(text) {
     const encoded = new TextEncoder().encode(text);
@@ -130,6 +159,7 @@ const Omega = (() => {
 
   function renderDbWarning() {
     const message = `<div class="alert alert-warning rounded-4">
+      ${mascotInline()}
       <strong>Base de datos no configurada.</strong><br>
       Abre <code>docs/assets/js/supabase-config.js</code>, coloca tu <code>SUPABASE_URL</code> y tu <code>anon public key</code>. Después ejecuta el SQL incluido en <code>database/omegafiguresweb_supabase.sql</code>.
     </div>`;
@@ -155,18 +185,19 @@ const Omega = (() => {
     if (!area) return;
     const node = document.createElement('div');
     node.className = `omega-toast ${type}`;
-    node.innerHTML = esc(message);
+    node.innerHTML = `<img class="toast-mascot" src="${mascotImage}" alt="" aria-hidden="true"><span>${esc(translateText(message))}</span>`;
     area.appendChild(node);
     setTimeout(() => node.remove(), 4200);
   }
 
   async function navigate(route) {
-    const valid = ['inicio', 'productos', 'carrito', 'login', 'mis-compras', 'admin', 'empleado', 'contacto'];
+    const valid = ['inicio', 'productos', 'carrito', 'visor-3d', 'spring', 'login', 'mis-compras', 'admin', 'empleado', 'contacto'];
     if (!valid.includes(route)) route = '404';
     const user = currentUser();
     if (route === 'admin' && user?.role !== 'ADMIN') { toast('Acceso permitido solo para administrador.', 'danger'); route = user ? 'inicio' : 'login'; }
     if (route === 'empleado' && user?.role !== 'EMPLEADO') { toast('Acceso permitido solo para empleados.', 'danger'); route = user ? 'inicio' : 'login'; }
     if (route === 'mis-compras' && user?.role !== 'CLIENTE') { toast('Debes iniciar sesión como cliente.', 'danger'); route = user ? 'inicio' : 'login'; }
+    setMascotStatus(mascotStatusForRoute(route));
 
     document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active-section'));
     document.getElementById(`page-${route}`)?.classList.add('active-section');
@@ -177,6 +208,15 @@ const Omega = (() => {
   }
 
   async function renderRoute(route) {
+    if (route === 'visor-3d') {
+      window.Omega3D?.activate();
+      updateNav();
+      return;
+    }
+    if (route === 'spring') {
+      updateNav();
+      return;
+    }
     if (!db) { renderDbWarning(); return; }
     if (route === 'inicio') renderHome();
     if (route === 'productos') renderProducts();
@@ -185,6 +225,85 @@ const Omega = (() => {
     if (route === 'admin') renderAdmin();
     if (route === 'empleado') renderEmployee();
     updateNav();
+  }
+
+  const springDefaultBaseUrl = 'http://localhost:8080';
+
+  function springBaseUrl() {
+    const input = document.getElementById('springBaseUrl');
+    const value = input?.value?.trim() || springDefaultBaseUrl;
+    return value.replace(/\/+$/, '');
+  }
+
+  function springUrl(path) {
+    return `${springBaseUrl()}${path.startsWith('/') ? path : `/${path}`}`;
+  }
+
+  function setSpringStatus(text) {
+    const el = document.getElementById('springStatus');
+    if (el) el.textContent = translateText(text);
+  }
+
+  function showSpringResult(value) {
+    const target = document.getElementById('springResult');
+    if (!target) return;
+    target.innerHTML = `<code>${esc(value)}</code>`;
+  }
+
+  function openSpringEndpoint(path) {
+    const url = springUrl(path);
+    setSpringStatus('Abriendo vista MVC en Spring Boot.');
+    setMascotStatus('Abriendo Spring Boot.');
+    window.open(url, '_blank', 'noopener,noreferrer');
+    toast('Vista MVC abierta en una nueva pestaña.', 'success');
+  }
+
+  async function testSpringEndpoint(path) {
+    const url = springUrl(path);
+    setSpringStatus('Consultando endpoint REST.');
+    setMascotStatus('Probando endpoint REST.');
+    showSpringResult(`GET ${url}\n\n${translateText('Consultando Spring Boot...')}`);
+
+    try {
+      const response = await fetch(url, { headers: { Accept: 'application/json' } });
+      const text = await response.text();
+      if (!response.ok) throw new Error(`HTTP ${response.status}: ${text || response.statusText}`);
+
+      let formatted = text;
+      try {
+        formatted = JSON.stringify(JSON.parse(text), null, 2);
+      } catch {
+        formatted = text;
+      }
+
+      showSpringResult(formatted);
+      setSpringStatus('Endpoint REST probado correctamente.');
+      setMascotStatus('Spring Boot respondió correctamente.');
+      toast('Endpoint REST probado correctamente.', 'success');
+    } catch (error) {
+      const message = {
+        error: translateText('No se pudo conectar con Spring Boot.'),
+        endpoint: url,
+        solucion: translateText('Ejecuta el proyecto springboot en IntelliJ o usa mvn spring-boot:run y vuelve a presionar el boton.'),
+        detalle: error.message
+      };
+      showSpringResult(JSON.stringify(message, null, 2));
+      setSpringStatus('Spring Boot no está respondiendo.');
+      setMascotStatus('Necesito que Spring Boot esté ejecutándose.');
+      toast('No se pudo conectar con Spring Boot.', 'danger');
+    }
+  }
+
+  async function copySpringCommand(command) {
+    try {
+      await navigator.clipboard.writeText(command);
+      toast('Comando copiado.', 'success');
+      setSpringStatus('Comando copiado.');
+    } catch {
+      showSpringResult(command);
+      toast('No pude copiar el comando; lo dejé en el resultado.', 'danger');
+      setSpringStatus('Comando mostrado en el resultado.');
+    }
   }
 
   function updateNav() {
@@ -199,7 +318,8 @@ const Omega = (() => {
   async function openAuthOrLogout() {
     const user = currentUser();
     if (!user) return navigate('login');
-    if (confirm(`Sesión activa: ${user.name}. ¿Deseas cerrar sesión?`)) {
+    const message = translateKey('confirm.logout', { name: user.name }, `Sesión activa: ${user.name}. ¿Deseas cerrar sesión?`);
+    if (confirm(message)) {
       localStorage.removeItem(LS.session);
       toast('Sesión cerrada.', 'success');
       await renderAll();
@@ -287,6 +407,7 @@ const Omega = (() => {
     else c.push({ productId, quantity: Math.min(qty, product.stock) });
     setLocal(LS.cart, c);
     updateNav();
+    setMascotStatus('Producto agregado. Te acompaño al carrito cuando quieras.');
     toast('Producto agregado al carrito.', 'success');
   }
 
@@ -326,18 +447,19 @@ const Omega = (() => {
   }
 
   async function checkout() {
-    if (!db) return toast('Configura la base de datos antes de finalizar compras.', 'danger');
+    setMascotStatus('Preparando tu compra.');
+    if (!db) { setMascotStatus('Necesito la base de datos configurada.'); return toast('Configura la base de datos antes de finalizar compras.', 'danger'); }
     const user = currentUser();
-    if (!user || user.role !== 'CLIENTE') { toast('Debes iniciar sesión como cliente para finalizar la compra.', 'danger'); return navigate('login'); }
+    if (!user || user.role !== 'CLIENTE') { setMascotStatus('Inicia sesión como cliente para comprar.'); toast('Debes iniciar sesión como cliente para finalizar la compra.', 'danger'); return navigate('login'); }
     const c = cart();
-    if (!c.length) return toast('El carrito está vacío.', 'danger');
+    if (!c.length) { setMascotStatus('Tu carrito está vacío.'); return toast('El carrito está vacío.', 'danger'); }
     const allProducts = products();
     const items = c.map(i => {
       const p = allProducts.find(x => x.id === i.productId);
       return { productId: p.id, name: p.name, price: p.price, quantity: i.quantity, image: p.image, stock: p.stock };
     });
     const insufficient = items.find(i => i.quantity > i.stock);
-    if (insufficient) return toast(`No hay stock suficiente para ${insufficient.name}.`, 'danger');
+    if (insufficient) { setMascotStatus('Necesito revisar el stock.'); return toast(`No hay stock suficiente para ${insufficient.name}.`, 'danger'); }
     const total = items.reduce((acc, i) => acc + i.price * i.quantity, 0);
     const orderId = uid('order');
 
@@ -357,11 +479,13 @@ const Omega = (() => {
 
       setLocal(LS.cart, []);
       await loadAll();
+      setMascotStatus('Compra registrada. Revisemos tus pedidos.');
       toast('Compra registrada como PENDIENTE.', 'success');
       await renderAll();
       await navigate('mis-compras');
     } catch (error) {
       console.error(error);
+      setMascotStatus('No pude completar la compra.');
       toast(`No se pudo registrar la compra: ${error.message}`, 'danger');
     }
   }
@@ -402,7 +526,12 @@ const Omega = (() => {
 
   function renderChart() {
     const metric = document.getElementById('adminMetric').value;
-    const labels = document.getElementById('adminPeriod').value === 'semana' ? ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'] : document.getElementById('adminPeriod').value === 'mes' ? ['S1','S2','S3','S4'] : ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+    const period = document.getElementById('adminPeriod').value;
+    const labels = period === 'semana'
+      ? translateList('chartWeek', ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'])
+      : period === 'mes'
+        ? translateList('chartMonth', ['S1','S2','S3','S4'])
+        : translateList('chartYear', ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']);
     const allOrders = orders();
     const clients = users().filter(u => u.role === 'CLIENTE');
     let data;
@@ -412,7 +541,7 @@ const Omega = (() => {
     const ctx = document.getElementById('adminChart');
     if (!ctx || !window.Chart) return;
     if (adminChart) adminChart.destroy();
-    adminChart = new Chart(ctx, { type: 'line', data: { labels, datasets: [{ label: metric, data, tension: .35, fill: true }] }, options: { responsive: true, plugins: { legend: { labels: { color: getComputedStyle(document.body).getPropertyValue('--text') } } }, scales: { x: { ticks: { color: getComputedStyle(document.body).getPropertyValue('--muted') } }, y: { ticks: { color: getComputedStyle(document.body).getPropertyValue('--muted') } } } } });
+    adminChart = new Chart(ctx, { type: 'line', data: { labels, datasets: [{ label: translateText(metric), data, tension: .35, fill: true }] }, options: { responsive: true, plugins: { legend: { labels: { color: getComputedStyle(document.body).getPropertyValue('--text') } } }, scales: { x: { ticks: { color: getComputedStyle(document.body).getPropertyValue('--muted') } }, y: { ticks: { color: getComputedStyle(document.body).getPropertyValue('--muted') } } } } });
   }
 
   function renderEmployeesTable() {
@@ -446,10 +575,12 @@ const Omega = (() => {
   }
 
   async function login(email, password) {
+    setMascotStatus('Validando tu acceso.');
     const hash = await hashText(password);
     const user = users().find(u => u.email.toLowerCase() === email.toLowerCase() && u.passwordHash === hash);
-    if (!user) return toast('Correo o contraseña incorrectos.', 'danger');
+    if (!user) { setMascotStatus('No pude validar esas credenciales.'); return toast('Correo o contraseña incorrectos.', 'danger'); }
     setLocal(LS.session, { userId: user.id, loginAt: nowDate() });
+    setMascotStatus('Acceso confirmado. Vamos a tu panel.');
     toast(`Bienvenido/a ${user.name}.`, 'success');
     await renderAll();
     await navigate(user.role === 'ADMIN' ? 'admin' : user.role === 'EMPLEADO' ? 'empleado' : 'productos');
@@ -461,12 +592,13 @@ const Omega = (() => {
   }
 
   async function register() {
+    setMascotStatus('Creando tu cuenta cliente.');
     const password = document.getElementById('regPassword').value;
     const confirm = document.getElementById('regConfirm').value;
     const email = document.getElementById('regEmail').value.trim();
-    if (password.length < 6) return toast('La contraseña debe tener al menos 6 caracteres.', 'danger');
-    if (password !== confirm) return toast('Las contraseñas no coinciden.', 'danger');
-    if (users().some(u => u.email.toLowerCase() === email.toLowerCase())) return toast('El correo ya existe.', 'danger');
+    if (password.length < 6) { setMascotStatus('La contraseña necesita más seguridad.'); return toast('La contraseña debe tener al menos 6 caracteres.', 'danger'); }
+    if (password !== confirm) { setMascotStatus('Las contraseñas no coinciden.'); return toast('Las contraseñas no coinciden.', 'danger'); }
+    if (users().some(u => u.email.toLowerCase() === email.toLowerCase())) { setMascotStatus('Ese correo ya está registrado.'); return toast('El correo ya existe.', 'danger'); }
     const interests = [...document.querySelectorAll('#registerForm .interest-grid input:checked')].map(i => i.value);
     const id = uid('user');
     const passwordHash = await hashText(password);
@@ -486,8 +618,9 @@ const Omega = (() => {
       created_at: nowDate()
     };
     const { error } = await db.from('users').insert(row);
-    if (error) return toast(`No se pudo crear la cuenta: ${error.message}`, 'danger');
+    if (error) { setMascotStatus('No pude crear la cuenta.'); return toast(`No se pudo crear la cuenta: ${error.message}`, 'danger'); }
     setLocal(LS.session, { userId: id, loginAt: nowDate() });
+    setMascotStatus('Cuenta creada. Ya puedes comprar.');
     toast('Cuenta creada correctamente.', 'success');
     document.getElementById('registerForm').reset();
     await loadAll();
@@ -500,8 +633,9 @@ const Omega = (() => {
   }
 
   async function createEmployee() {
+    setMascotStatus('Creando empleado.');
     const email = document.getElementById('empEmail').value.trim();
-    if (users().some(u => u.email.toLowerCase() === email.toLowerCase())) return toast('El correo ya existe.', 'danger');
+    if (users().some(u => u.email.toLowerCase() === email.toLowerCase())) { setMascotStatus('Ese correo ya está registrado.'); return toast('El correo ya existe.', 'danger'); }
     const row = {
       id: uid('emp'),
       name: document.getElementById('empName').value.trim(),
@@ -518,15 +652,17 @@ const Omega = (() => {
       created_at: nowDate()
     };
     const { error } = await db.from('users').insert(row);
-    if (error) return toast(`No se pudo crear empleado: ${error.message}`, 'danger');
+    if (error) { setMascotStatus('No pude crear el empleado.'); return toast(`No se pudo crear empleado: ${error.message}`, 'danger'); }
     document.getElementById('employeeForm').reset();
     bootstrap.Modal.getInstance(document.getElementById('employeeModal')).hide();
+    setMascotStatus('Empleado creado y registrado.');
     toast('Empleado creado correctamente.', 'success');
     await loadAll();
     renderAdmin();
   }
 
   async function saveProduct() {
+    setMascotStatus('Guardando producto.');
     const id = document.getElementById('prodId').value || uid('prod');
     const product = {
       id,
@@ -541,8 +677,9 @@ const Omega = (() => {
       featured: products().find(p => p.id === id)?.featured || false
     };
     const { error } = await db.from('products').upsert(product, { onConflict: 'id' });
-    if (error) return toast(`No se pudo guardar producto: ${error.message}`, 'danger');
+    if (error) { setMascotStatus('No pude guardar el producto.'); return toast(`No se pudo guardar producto: ${error.message}`, 'danger'); }
     clearProductForm();
+    setMascotStatus('Producto guardado en la tienda.');
     toast('Producto guardado en la base SQL.', 'success');
     await loadAll();
     renderEmployee();
@@ -571,21 +708,25 @@ const Omega = (() => {
   }
 
   async function toggleProduct(id) {
+    setMascotStatus('Actualizando estado del producto.');
     const p = products().find(x => x.id === id);
     if (!p) return;
     const { error } = await db.from('products').update({ active: !p.active }).eq('id', id);
-    if (error) return toast(`No se pudo actualizar producto: ${error.message}`, 'danger');
+    if (error) { setMascotStatus('No pude actualizar el producto.'); return toast(`No se pudo actualizar producto: ${error.message}`, 'danger'); }
     await loadAll();
     renderEmployee();
     renderProducts();
+    setMascotStatus('Estado del producto actualizado.');
     toast('Estado actualizado.', 'success');
   }
 
   async function setOrderStatus(id, status) {
+    setMascotStatus('Actualizando pedido.');
     const { error } = await db.from('orders').update({ status }).eq('id', id);
-    if (error) return toast(`No se pudo actualizar pedido: ${error.message}`, 'danger');
+    if (error) { setMascotStatus('No pude actualizar el pedido.'); return toast(`No se pudo actualizar pedido: ${error.message}`, 'danger'); }
     await loadAll();
     renderEmployee();
+    setMascotStatus('Pedido actualizado correctamente.');
     toast(`Pedido marcado como ${status}.`, 'success');
   }
 
@@ -596,7 +737,7 @@ const Omega = (() => {
     btn.querySelector('i').className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
   }
 
-  function empty(text) { return `<div class="empty-state">${esc(text)}</div>`; }
+  function empty(text) { return `<div class="empty-state">${mascotInline()}<div>${esc(text)}</div></div>`; }
 
   function applyTheme() {
     const theme = localStorage.getItem(LS.theme) || 'dark';
@@ -610,10 +751,13 @@ const Omega = (() => {
   }
 
   async function refreshData() {
+    setMascotStatus('Actualizando datos.');
     await loadAll(true);
+    if (!db) { setMascotStatus('Necesito la base de datos configurada.'); return; }
     await renderAll();
     const route = window.location.hash.replace('#', '') || 'inicio';
     await renderRoute(route);
+    setMascotStatus('Datos actualizados.');
   }
 
   function initEvents() {
@@ -627,8 +771,18 @@ const Omega = (() => {
     document.getElementById('adminPeriod').addEventListener('change', renderChart);
     document.querySelectorAll('[data-route]').forEach(el => el.addEventListener('click', e => { const route = el.dataset.route; if (route) { e.preventDefault(); navigate(route); } }));
     document.querySelectorAll('[data-order-filter]').forEach(btn => btn.addEventListener('click', () => { document.querySelectorAll('[data-order-filter]').forEach(b => b.classList.remove('active')); btn.classList.add('active'); currentOrderFilter = btn.dataset.orderFilter; renderMyOrders(); }));
+    document.querySelectorAll('[data-spring-open]').forEach(btn => btn.addEventListener('click', () => openSpringEndpoint(btn.dataset.springOpen)));
+    document.querySelectorAll('[data-spring-test]').forEach(btn => btn.addEventListener('click', () => testSpringEndpoint(btn.dataset.springTest)));
+    document.querySelectorAll('[data-spring-copy]').forEach(btn => btn.addEventListener('click', () => copySpringCommand(btn.dataset.springCopy)));
     document.getElementById('languageSelect').value = localStorage.getItem(LS.lang) || 'es';
-    document.getElementById('languageSelect').addEventListener('change', e => { localStorage.setItem(LS.lang, e.target.value); toast(e.target.value === 'en' ? 'Language saved.' : 'Idioma guardado.', 'success'); });
+    document.getElementById('languageSelect').addEventListener('change', async e => {
+      localStorage.setItem(LS.lang, e.target.value);
+      window.OmegaI18n?.setLanguage(e.target.value);
+      toast(e.target.value === 'en' ? 'Language saved.' : 'Idioma guardado.', 'success');
+      if (adminChart) renderChart();
+      await renderRoute(window.location.hash.replace('#', '') || 'inicio');
+      applyLanguage();
+    });
   }
 
   async function init() {
