@@ -82,3 +82,31 @@ https://TU_USUARIO.github.io/OmegaFiguresWeb/
 ## Nota de seguridad
 
 Esta versión está preparada para un proyecto académico/portafolio. No uses datos reales de tarjetas, pagos o contraseñas personales. Para una tienda comercial real se debe implementar autenticación con Supabase Auth, políticas RLS estrictas y pasarela de pagos segura.
+
+## Actualización: apartado 3D, Spring, validaciones de pago y mascota
+
+Esta versión incluye:
+
+- Apartado **Experiencia 3D** compatible con GitHub Pages.
+- Visor de figura con rotación al mover el cursor.
+- Efecto visual tipo **Spring** para dar sensación de rebote físico.
+- Mascota flotante **Omega Shark**, visible mientras se navega por las páginas.
+- Validaciones mejoradas en el pago:
+  - Validación de campos obligatorios de entrega.
+  - Validación de teléfono por cantidad mínima de dígitos.
+  - Validación de dirección con longitud mínima.
+  - Validación Luhn para tarjeta.
+  - Detección de marca de tarjeta.
+  - Validación de fecha de vencimiento.
+  - Validación de CVV según tipo de tarjeta.
+
+> Nota: El “Spring” agregado en esta versión es un efecto visual/animación compatible con GitHub Pages. Si se requiere Spring Boot como backend Java, debe desplegarse en un hosting que soporte Java, no en GitHub Pages.
+
+## Actualización: validaciones de edad y pago
+
+Se agregaron validaciones adicionales en el registro y checkout:
+
+- Registro de cliente: nombre y apellido, correo, teléfono, dirección, ciudad, país y edad mínima de 13 años.
+- Contraseña: mínimo 8 caracteres, al menos una mayúscula, una minúscula y un número.
+- Pago con tarjeta: titular con nombre y apellido, edad mínima de 18 años, identificación opcional válida, número con algoritmo Luhn, marca reconocida, vencimiento no caducado y máximo a 10 años, CVV según marca.
+- El sistema no guarda número completo de tarjeta ni CVV.
